@@ -55,9 +55,15 @@
                                 class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none transition focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10"
                             >
                                 <option value="" data-tanggal="" data-lokasi="" data-kuota="">— Pilih salah satu kegiatan —</option>
-                                <option value="keuangan-desa" data-tanggal="14–16 Sep 2026" data-lokasi="Aula Diklat, Purbalingga" data-kuota="18 dari 40 kuota terisi" {{ old('kegiatan_id') === 'keuangan-desa' ? 'selected' : '' }}>Bimtek Pengelolaan Keuangan Desa</option>
-                                <option value="digitalisasi-pelayanan" data-tanggal="22–24 Sep 2026" data-lokasi="Gedung Serbaguna, Purwokerto" data-kuota="35 dari 40 kuota terisi" {{ old('kegiatan_id') === 'digitalisasi-pelayanan' ? 'selected' : '' }}>Bimtek Digitalisasi Pelayanan Publik</option>
-                                <option value="laporan-kinerja" data-tanggal="2–3 Okt 2026" data-lokasi="Aula Diklat, Purbalingga" data-kuota="6 dari 40 kuota terisi" {{ old('kegiatan_id') === 'laporan-kinerja' ? 'selected' : '' }}>Bimtek Penyusunan Laporan Kinerja</option>
+                                @foreach ($kegiatanList as $k)
+                                    <option
+                                        value="{{ $k->id }}"
+                                        data-tanggal="{{ $k->tanggal }}"
+                                        data-lokasi="{{ $k->lokasi }}"
+                                        data-kuota="{{ $k->kuota_terisi }} dari {{ $k->kuota }} kuota terisi"
+                                        {{ (string) old('kegiatan_id') === (string) $k->id ? 'selected' : '' }}
+                                    >{{ $k->nama }}</option>
+                                @endforeach
                             </select>
                             @error('kegiatan_id')
                                 <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p>
@@ -107,6 +113,7 @@
                             <div>
                                 <label for="nip" class="text-sm font-semibold text-ink-900">NIP <span class="text-gold-600">*</span></label>
                                 <input type="text" id="nip" name="nip" value="{{ old('nip') }}" required inputmode="numeric" placeholder="18 digit NIP" class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 font-mono text-sm text-ink-900 outline-none transition placeholder:font-sans placeholder:text-ink/35 focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                                <p id="nip-status" class="mt-1.5 hidden text-xs font-medium"></p>
                                 @error('nip') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                             </div>
 
@@ -246,6 +253,60 @@
 
         kegiatanSelect?.addEventListener('change', syncKegiatanInfo);
         if (kegiatanSelect?.value) syncKegiatanInfo();
+
+        // ===== Autofill dari NIP =====
+        const nipInput = document.getElementById('nip');
+        const nipStatus = document.getElementById('nip-status');
+        let timerNip = null;
+
+        const fieldTerhubung = {
+            unit_kerja: document.getElementById('unit_kerja'),
+            nama_gelar: document.getElementById('nama_gelar'),
+            pangkat_golongan: document.getElementById('pangkat_golongan'),
+            tempat_tanggal_lahir: document.getElementById('ttl'),
+            jabatan: document.getElementById('jabatan'),
+            email: document.getElementById('email'),
+            nama_gelar_kepsek: document.getElementById('nama_gelar_kepsek'),
+            nip_kepsek: document.getElementById('nip_kepsek'),
+        };
+
+        function tampilkanStatusNip(teks, warna) {
+            nipStatus.textContent = teks;
+            nipStatus.className = `mt-1.5 text-xs font-medium ${warna}`;
+            nipStatus.classList.remove('hidden');
+        }
+
+        async function cariDataNip(nip) {
+            try {
+                const res = await fetch(`/pendaftaran/cari-nip/${encodeURIComponent(nip)}`);
+                const hasil = await res.json();
+
+                if (!hasil.ditemukan) {
+                    tampilkanStatusNip('NIP baru — silakan lengkapi data di bawah.', 'text-ink/45');
+                    return;
+                }
+
+                Object.entries(fieldTerhubung).forEach(([key, el]) => {
+                    if (el && hasil.data[key] != null) {
+                        el.value = hasil.data[key];
+                    }
+                });
+
+                tampilkanStatusNip('✓ Data ditemukan dari pendaftaran sebelumnya, otomatis diisi. Silakan periksa kembali.', 'text-success');
+            } catch (e) {
+                // gagal cek (mis. offline) — biarkan peserta isi manual, jangan blokir alur
+            }
+        }
+
+        nipInput?.addEventListener('input', () => {
+            clearTimeout(timerNip);
+            nipStatus.classList.add('hidden');
+
+            const nip = nipInput.value.trim();
+            if (nip.length < 8) return; // terlalu pendek, belum layak dicek
+
+            timerNip = setTimeout(() => cariDataNip(nip), 600); // debounce 600ms
+        });
 
         // Unit Kerja: paksa huruf kapital pada nilai yang benar-benar dikirim, bukan cuma tampilan
         const unitKerjaInput = document.getElementById('unit_kerja');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pendaftaran;
 use Illuminate\Http\Request;
 
 class SertifikatController extends Controller
@@ -10,25 +11,12 @@ class SertifikatController extends Controller
     {
         $nomor = $request->query('nomor_pendaftaran');
         $dicari = filled($nomor);
-
         $pendaftaran = null;
 
         if ($dicari) {
-            // TODO: ganti dengan query asli, contoh:
-            // $pendaftaran = Pendaftaran::with('kegiatan')->where('nomor_pendaftaran', $nomor)->first();
-
-            if (str_starts_with(strtoupper($nomor), 'BT-')) {
-                $pendaftaran = (object) [
-                    'id' => 1,
-                    'nomor_pendaftaran' => strtoupper($nomor),
-                    'nama_gelar' => 'Siti Aminah, S.Pd.',
-                    'status' => 'sertifikat', // ganti ke 'sppd' untuk lihat state "belum terbit"
-                    'kegiatan' => (object) [
-                        'nama' => 'Bimtek Pengelolaan Keuangan Desa',
-                        'tanggal' => '14–16 Sep 2026',
-                    ],
-                ];
-            }
+            $pendaftaran = Pendaftaran::with(['peserta', 'kegiatan'])
+                ->where('nomor_pendaftaran', strtoupper(trim($nomor)))
+                ->first();
         }
 
         return view('sertifikat.index', compact('pendaftaran', 'dicari'));

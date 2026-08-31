@@ -6,6 +6,8 @@ use App\Http\Controllers\CekStatusController;
 use App\Http\Controllers\SertifikatController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\Admin\AdminPesertaController;
+use App\Http\Controllers\Admin\AdminKegiatanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,8 +18,9 @@ use App\Http\Controllers\AdminAuthController;
 Route::get('/', fn () => view('beranda'))->name('beranda');
 Route::get('/cara-kerja', fn () => view('cara-kerja'))->name('cara-kerja');
 
-Route::get('/pendaftaran', fn () => view('daftar.index'))->name('pendaftaran.create');
+Route::get('/pendaftaran', [PendaftaranController::class, 'create'])->name('pendaftaran.create');
 Route::post('/pendaftaran', [PendaftaranController::class, 'store'])->name('pendaftaran.store');
+Route::get('/pendaftaran/cari-nip/{nip}', [PendaftaranController::class, 'cariNip'])->name('pendaftaran.cari-nip');
 Route::get('/pendaftaran/{pendaftaran}/unduh/{jenis}', [PendaftaranController::class, 'unduh'])
     ->name('pendaftaran.unduh');
 
@@ -39,16 +42,21 @@ Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admi
 | Admin — Panel
 |--------------------------------------------------------------------------
 | TODO: bungkus grup ini dengan middleware('auth:admin') begitu login admin
-| sungguhan (bukan placeholder) sudah siap, supaya tidak bisa diakses publik.
+| sungguhan (bukan placeholder) sudah siap.
 */
 
 Route::prefix('admin')->group(function () {
     Route::get('/dashboard', fn () => view('admin.dashboard'))->name('admin.dashboard');
 
-    Route::get('/kegiatan', fn () => view('admin.kegiatan.index'))->name('admin.kegiatan.index');
+    Route::get('/kegiatan', [AdminKegiatanController::class, 'index'])->name('admin.kegiatan.index');
+    Route::post('/kegiatan', [AdminKegiatanController::class, 'store'])->name('admin.kegiatan.store');
+    Route::put('/kegiatan/{kegiatan}', [AdminKegiatanController::class, 'update'])->name('admin.kegiatan.update');
+    Route::delete('/kegiatan/{kegiatan}', [AdminKegiatanController::class, 'destroy'])->name('admin.kegiatan.destroy');
 
-    Route::get('/peserta', fn () => view('admin.peserta.index'))->name('admin.peserta.index');
-    Route::get('/peserta/verifikasi', fn () => view('admin.peserta.verifikasi'))->name('admin.peserta.verifikasi');
+    Route::get('/peserta', [AdminPesertaController::class, 'index'])->name('admin.peserta.index');
+    Route::get('/peserta/verifikasi', [AdminPesertaController::class, 'verifikasi'])->name('admin.peserta.verifikasi');
+    Route::post('/peserta/{pendaftaran}/setujui', [AdminPesertaController::class, 'setujui'])->name('admin.peserta.setujui');
+    Route::post('/peserta/{pendaftaran}/tolak', [AdminPesertaController::class, 'tolak'])->name('admin.peserta.tolak');
 
     Route::get('/absensi', fn () => view('admin.absensi.scan'))->name('absensi.scan.page');
     Route::post('/absensi/scan', [AbsensiController::class, 'scan'])->name('absensi.scan');

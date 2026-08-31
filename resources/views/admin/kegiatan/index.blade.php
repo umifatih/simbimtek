@@ -6,6 +6,12 @@
 
 @section('content')
 
+    @if (session('status'))
+        <div class="mb-5 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm font-medium text-success">
+            {{ session('status') }}
+        </div>
+    @endif
+
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p class="text-sm text-ink/60">Kelola daftar kegiatan bimtek yang dibuka untuk pendaftaran.</p>
         <button type="button" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-canvas transition hover:bg-ink-700">
@@ -15,33 +21,34 @@
     </div>
 
     @php
-        $kegiatan = [
-            ['nama' => 'Bimtek Pengelolaan Keuangan Desa', 'tanggal' => '14–16 Sep 2026', 'lokasi' => 'Aula Diklat, Purbalingga', 'kuota' => '18/40', 'status' => 'Dibuka'],
-            ['nama' => 'Bimtek Digitalisasi Pelayanan Publik', 'tanggal' => '22–24 Sep 2026', 'lokasi' => 'Gedung Serbaguna, Purwokerto', 'kuota' => '35/40', 'status' => 'Dibuka'],
-            ['nama' => 'Bimtek Penyusunan Laporan Kinerja', 'tanggal' => '2–3 Okt 2026', 'lokasi' => 'Aula Diklat, Purbalingga', 'kuota' => '6/40', 'status' => 'Dibuka'],
-            ['nama' => 'Bimtek Pengadaan Barang & Jasa', 'tanggal' => '10–11 Agt 2026', 'lokasi' => 'Aula Diklat, Purbalingga', 'kuota' => '40/40', 'status' => 'Selesai'],
-        ];
+        $warnaStatus = ['dibuka' => 'bg-success/10 text-success', 'ditutup' => 'bg-red-50 text-red-600', 'selesai' => 'bg-ink-900/10 text-ink/50'];
+        $labelStatus = ['dibuka' => 'Dibuka', 'ditutup' => 'Ditutup', 'selesai' => 'Selesai'];
     @endphp
 
     {{-- Mobile: kartu. Desktop: tabel. --}}
     <div class="mt-5 space-y-3 sm:hidden">
-        @foreach ($kegiatan as $k)
+        @forelse ($kegiatan as $k)
             <div class="rounded-2xl border border-line bg-white p-4">
                 <div class="flex items-start justify-between gap-2">
-                    <p class="text-sm font-semibold text-ink-900">{{ $k['nama'] }}</p>
-                    <span @class(['shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold', 'bg-success/10 text-success' => $k['status'] === 'Dibuka', 'bg-ink-900/10 text-ink/50' => $k['status'] === 'Selesai'])>{{ $k['status'] }}</span>
+                    <p class="text-sm font-semibold text-ink-900">{{ $k->nama }}</p>
+                    <span @class(['shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold', $warnaStatus[$k->status]])>{{ $labelStatus[$k->status] }}</span>
                 </div>
-                <p class="mt-1.5 font-mono text-xs text-ink/50">{{ $k['tanggal'] }}</p>
-                <p class="mt-0.5 text-xs text-ink/50">{{ $k['lokasi'] }}</p>
+                <p class="mt-1.5 font-mono text-xs text-ink/50">{{ $k->tanggal }}</p>
+                <p class="mt-0.5 text-xs text-ink/50">{{ $k->lokasi }}</p>
                 <div class="mt-3 flex items-center justify-between border-t border-line pt-3">
-                    <span class="text-xs font-medium text-ink/60">Kuota {{ $k['kuota'] }}</span>
+                    <span class="text-xs font-medium text-ink/60">Kuota {{ $k->pendaftaran_count }}/{{ $k->kuota }}</span>
                     <div class="flex gap-3 text-xs font-semibold">
                         <button type="button" class="text-ink-900">Edit</button>
-                        <button type="button" class="text-red-600">Hapus</button>
+                        <form action="{{ route('admin.kegiatan.destroy', $k) }}" method="POST" onsubmit="return confirm('Hapus kegiatan {{ $k->nama }}?');">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="text-red-600">Hapus</button>
+                        </form>
                     </div>
                 </div>
             </div>
-        @endforeach
+        @empty
+            <p class="py-10 text-center text-sm text-ink/40">Belum ada kegiatan. Tambahkan yang pertama.</p>
+        @endforelse
     </div>
 
     <div class="mt-5 hidden overflow-hidden rounded-2xl border border-line bg-white sm:block">
@@ -57,22 +64,27 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-line">
-                @foreach ($kegiatan as $k)
+                @forelse ($kegiatan as $k)
                     <tr class="transition hover:bg-canvas/40">
-                        <td class="px-5 py-3.5 font-medium text-ink-900">{{ $k['nama'] }}</td>
-                        <td class="px-5 py-3.5 font-mono text-xs text-ink/60">{{ $k['tanggal'] }}</td>
-                        <td class="px-5 py-3.5 text-ink/60">{{ $k['lokasi'] }}</td>
-                        <td class="px-5 py-3.5 text-ink/60">{{ $k['kuota'] }}</td>
+                        <td class="px-5 py-3.5 font-medium text-ink-900">{{ $k->nama }}</td>
+                        <td class="px-5 py-3.5 font-mono text-xs text-ink/60">{{ $k->tanggal }}</td>
+                        <td class="px-5 py-3.5 text-ink/60">{{ $k->lokasi }}</td>
+                        <td class="px-5 py-3.5 text-ink/60">{{ $k->pendaftaran_count }}/{{ $k->kuota }}</td>
                         <td class="px-5 py-3.5">
-                            <span @class(['rounded-full px-2.5 py-1 text-xs font-semibold', 'bg-success/10 text-success' => $k['status'] === 'Dibuka', 'bg-ink-900/10 text-ink/50' => $k['status'] === 'Selesai'])>{{ $k['status'] }}</span>
+                            <span @class(['rounded-full px-2.5 py-1 text-xs font-semibold', $warnaStatus[$k->status]])>{{ $labelStatus[$k->status] }}</span>
                         </td>
                         <td class="px-5 py-3.5 text-right">
                             <button type="button" class="text-xs font-semibold text-ink-900 hover:underline">Edit</button>
                             <span class="mx-1.5 text-line">|</span>
-                            <button type="button" class="text-xs font-semibold text-red-600 hover:underline">Hapus</button>
+                            <form action="{{ route('admin.kegiatan.destroy', $k) }}" method="POST" class="inline" onsubmit="return confirm('Hapus kegiatan {{ $k->nama }}?');">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="text-xs font-semibold text-red-600 hover:underline">Hapus</button>
+                            </form>
                         </td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr><td colspan="6" class="px-5 py-10 text-center text-sm text-ink/40">Belum ada kegiatan. Tambahkan yang pertama.</td></tr>
+                @endforelse
             </tbody>
         </table>
     </div>

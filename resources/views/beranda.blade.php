@@ -230,43 +230,21 @@
         </div>
 
         <div id="jadwal" class="mt-8 grid gap-5 sm:mt-10 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-            @php
-                $kegiatan = [
-                    [
-                        'nama' => 'Bimtek Pengelolaan Keuangan Desa',
-                        'tanggal' => '14–16 Sep 2026',
-                        'lokasi' => 'Aula Diklat, Purbalingga',
-                        'kuota' => '18 dari 40 kuota',
-                        'status' => 'Kuota Tersedia',
-                    ],
-                    [
-                        'nama' => 'Bimtek Digitalisasi Pelayanan Publik',
-                        'tanggal' => '22–24 Sep 2026',
-                        'lokasi' => 'Gedung Serbaguna, Purwokerto',
-                        'kuota' => '35 dari 40 kuota',
-                        'status' => 'Segera Ditutup',
-                    ],
-                    [
-                        'nama' => 'Bimtek Penyusunan Laporan Kinerja',
-                        'tanggal' => '2–3 Okt 2026',
-                        'lokasi' => 'Aula Diklat, Purbalingga',
-                        'kuota' => '6 dari 40 kuota',
-                        'status' => 'Kuota Tersedia',
-                    ],
-                ];
-            @endphp
-
-            @foreach ($kegiatan as $k)
+            @forelse ($kegiatanList as $k)
+                @php
+                    $persenTerisi = $k->kuota > 0 ? $k->kuota_terisi / $k->kuota : 0;
+                    $statusLabel = $persenTerisi >= 0.8 ? 'Segera Ditutup' : 'Kuota Tersedia';
+                @endphp
                 <div class="group relative overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-line transition hover:-translate-y-1 hover:shadow-xl hover:shadow-ink-900/[0.08]">
                     <div @class([
                         'h-1.5 w-full',
-                        'bg-success' => $k['status'] === 'Kuota Tersedia',
-                        'bg-gold' => $k['status'] === 'Segera Ditutup',
+                        'bg-success' => $statusLabel === 'Kuota Tersedia',
+                        'bg-gold' => $statusLabel === 'Segera Ditutup',
                     ])></div>
 
                     <div class="p-5 sm:p-6">
                         <div class="flex items-start justify-between gap-3">
-                            <h3 class="font-display text-base font-semibold leading-snug text-ink-900 sm:text-lg">{{ $k['nama'] }}</h3>
+                            <h3 class="font-display text-base font-semibold leading-snug text-ink-900 sm:text-lg">{{ $k->nama }}</h3>
                         </div>
 
                         <dl class="mt-4 space-y-2.5 text-sm text-ink/70 sm:mt-5">
@@ -274,13 +252,13 @@
                                 <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-ink-900/[0.06] text-ink-900">
                                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 8.25h16.5M4.5 6h15a.75.75 0 01.75.75v12a.75.75 0 01-.75.75h-15a.75.75 0 01-.75-.75v-12A.75.75 0 014.5 6z"/></svg>
                                 </span>
-                                <span class="font-mono text-xs">{{ $k['tanggal'] }}</span>
+                                <span class="font-mono text-xs">{{ $k->tanggal }}</span>
                             </div>
                             <div class="flex items-center gap-2.5">
                                 <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-ink-900/[0.06] text-ink-900">
                                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
                                 </span>
-                                {{ $k['lokasi'] }}
+                                {{ $k->lokasi }}
                             </div>
                         </dl>
                     </div>
@@ -293,17 +271,21 @@
                     </div>
 
                     <div class="flex items-center justify-between px-5 py-4 sm:px-6 sm:py-5">
-                        <span class="text-xs font-medium text-ink/55">{{ $k['kuota'] }}</span>
+                        <span class="text-xs font-medium text-ink/55">{{ $k->kuota_terisi }} dari {{ $k->kuota }} kuota</span>
                         <span @class([
                             'rounded-full px-3 py-1 text-xs font-semibold',
-                            'bg-success/10 text-success' => $k['status'] === 'Kuota Tersedia',
-                            'bg-gold/15 text-gold-600' => $k['status'] === 'Segera Ditutup',
+                            'bg-success/10 text-success' => $statusLabel === 'Kuota Tersedia',
+                            'bg-gold/15 text-gold-600' => $statusLabel === 'Segera Ditutup',
                         ])>
-                            {{ $k['status'] }}
+                            {{ $statusLabel }}
                         </span>
                     </div>
                 </div>
-            @endforeach
+            @empty
+                <div class="col-span-full rounded-2xl border border-dashed border-line bg-white p-10 text-center">
+                    <p class="text-sm text-ink/50">Belum ada kegiatan yang dibuka saat ini. Cek lagi lain waktu ya.</p>
+                </div>
+            @endforelse
         </div>
         </div>
     </section>

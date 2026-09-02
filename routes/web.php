@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\CekStatusController;
 use App\Http\Controllers\SertifikatController;
@@ -15,7 +16,7 @@ use App\Http\Controllers\Admin\AdminKegiatanController;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', fn () => view('beranda'))->name('beranda');
+Route::get('/', [BerandaController::class, 'index'])->name('beranda');
 Route::get('/cara-kerja', fn () => view('cara-kerja'))->name('cara-kerja');
 
 Route::get('/pendaftaran', [PendaftaranController::class, 'create'])->name('pendaftaran.create');

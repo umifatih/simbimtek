@@ -11,6 +11,20 @@ use Illuminate\Support\Str;
 class PendaftaranController extends Controller
 {
     /**
+     * Tampilkan form pendaftaran, kirim daftar kegiatan yang statusnya 'dibuka'.
+     * kuota_terisi dihitung otomatis dari jumlah pendaftaran yang sudah masuk.
+     */
+    public function create()
+    {
+        $kegiatanList = Kegiatan::withCount(['pendaftaran as kuota_terisi'])
+            ->where('status', 'dibuka')
+            ->orderBy('tanggal_mulai')
+            ->get();
+
+        return view('daftar.index', compact('kegiatanList'));
+    }
+
+    /**
      * AJAX: dipanggil dari form pendaftaran begitu peserta selesai mengetik NIP.
      * Kalau NIP sudah pernah dipakai daftar sebelumnya, kembalikan data dirinya
      * supaya form bisa diisi otomatis di sisi klien.
@@ -102,10 +116,4 @@ class PendaftaranController extends Controller
         // $pendaftaran->peserta dan $pendaftaran->kegiatan.
         return "Placeholder unduh dokumen: {$jenis} untuk {$pendaftaran->nomor_pendaftaran}";
     }
-    public function create()
-    {
-        $kegiatanList = Kegiatan::where('status', 'buka')->get();
-
-        return view('daftar.index', compact('kegiatanList'));
-}
 }

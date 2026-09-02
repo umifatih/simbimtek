@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BerandaController;
+use App\Http\Controllers\JadwalController;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\CekStatusController;
 use App\Http\Controllers\SertifikatController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\Admin\AdminPesertaController;
 use App\Http\Controllers\Admin\AdminKegiatanController;
+use App\Http\Controllers\Admin\AdminDashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +20,7 @@ use App\Http\Controllers\Admin\AdminKegiatanController;
 
 Route::get('/', [BerandaController::class, 'index'])->name('beranda');
 Route::get('/cara-kerja', fn () => view('cara-kerja'))->name('cara-kerja');
+Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal');
 
 Route::get('/pendaftaran', [PendaftaranController::class, 'create'])->name('pendaftaran.create');
 Route::post('/pendaftaran', [PendaftaranController::class, 'store'])->name('pendaftaran.store');
@@ -47,7 +50,7 @@ Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admi
 */
 
 Route::prefix('admin')->group(function () {
-    Route::get('/dashboard', fn () => view('admin.dashboard'))->name('admin.dashboard');
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
     Route::get('/kegiatan', [AdminKegiatanController::class, 'index'])->name('admin.kegiatan.index');
     Route::post('/kegiatan', [AdminKegiatanController::class, 'store'])->name('admin.kegiatan.store');

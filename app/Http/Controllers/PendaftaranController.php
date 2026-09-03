@@ -5,15 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Kegiatan;
 use App\Models\Peserta;
 use App\Models\Pendaftaran;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class PendaftaranController extends Controller
 {
-    /**
-     * Tampilkan form pendaftaran, kirim daftar kegiatan yang statusnya 'dibuka'.
-     * kuota_terisi dihitung otomatis dari jumlah pendaftaran yang sudah masuk.
-     */
     public function create()
     {
         $kegiatanList = Kegiatan::withCount(['pendaftaran as kuota_terisi'])
@@ -24,11 +21,6 @@ class PendaftaranController extends Controller
         return view('daftar.index', compact('kegiatanList'));
     }
 
-    /**
-     * AJAX: dipanggil dari form pendaftaran begitu peserta selesai mengetik NIP.
-     * Kalau NIP sudah pernah dipakai daftar sebelumnya, kembalikan data dirinya
-     * supaya form bisa diisi otomatis di sisi klien.
-     */
     public function cariNip(string $nip)
     {
         $peserta = Peserta::where('nip', $nip)->first();
@@ -68,9 +60,6 @@ class PendaftaranController extends Controller
             'setuju'               => 'required',
         ]);
 
-        // Cari-atau-buat profil peserta berdasarkan NIP. Kalau sudah ada, datanya
-        // ditimpa dengan yang baru dikirim (jaga-jaga kalau memang ada perubahan,
-        // mis. pindah unit kerja atau ganti jabatan).
         $peserta = Peserta::updateOrCreate(
             ['nip' => $validated['nip']],
             [
@@ -85,7 +74,6 @@ class PendaftaranController extends Controller
             ]
         );
 
-        // Cegah daftar dobel untuk kegiatan yang sama (constraint unique di DB juga jaga ini)
         $sudahDaftar = Pendaftaran::where('peserta_id', $peserta->id)
             ->where('kegiatan_id', $validated['kegiatan_id'])
             ->first();
@@ -112,8 +100,20 @@ class PendaftaranController extends Controller
 
     public function unduh(Pendaftaran $pendaftaran, string $jenis)
     {
-        // TODO: generate PDF asli dari template pakai fpdi, isi dari
-        // $pendaftaran->peserta dan $pendaftaran->kegiatan.
-        return "Placeholder unduh dokumen: {$jenis} untuk {$pendaftaran->nomor_pendaftaran}";
+        $pendaftaran->load(['peserta', 'kegiatan']);
+        $kegiatan = $pendaftaran->kegiatan;
+
+        $viewMap = [
+            'surat-tugas' => 'surat.surat-tugas',
+            'sppd' => 'surat.sppd',
+        ];
+
+        abort_unless(isset($viewMap[$jenis]), 404);
+
+        $pdf = Pdf::loadView($viewMap[$jenis], compact('pendaftaran', 'kegiatan'))->setPaper('a4');
+
+        $namaFile = $jenis . '-' . Str::slug($pendaftaran->nama_gelar) . '.pdf';
+
+        return $pdf->download($namaFile);
     }
 }

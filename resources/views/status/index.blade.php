@@ -100,7 +100,7 @@
                         </div>
                         <div>
                             <dt class="text-xs font-medium uppercase tracking-wide text-ink/40">Jadwal</dt>
-                            <dd class="mt-1 font-mono text-sm text-ink-900">{{ $pendaftaran->kegiatan->tanggal }}</dd>
+                            <dd class="mt-1 font-mono text-sm text-ink-900">{{ $pendaftaran->kegiatan->teks_jadwal }}</dd>
                         </div>
                     </dl>
                 </div>

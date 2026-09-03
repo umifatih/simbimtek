@@ -13,28 +13,28 @@ class Kegiatan extends Model
     protected $table = 'kegiatan';
 
     protected $fillable = [
-    'nama',
-    'tanggal_mulai',
-    'tanggal_selesai',
-    'waktu',
-    'lokasi',
-    'kuota',
-    'status',
-    'nomor_surat_dasar',
-    'tanggal_surat_dasar',
-    'nama_panitia',
-    'nip_panitia',
-    'nama_sekretaris',
-    'nip_sekretaris',
-];
+        'nama',
+        'tanggal_mulai',
+        'tanggal_selesai',
+        'waktu',
+        'lokasi',
+        'kuota',
+        'status',
+        'nomor_surat_dasar',
+        'tanggal_surat_dasar',
+        'nama_panitia',
+        'nip_panitia',
+        'nama_sekretaris',
+        'nip_sekretaris',
+    ];
 
-protected $casts = [
-    'tanggal_mulai' => 'date',
-    'tanggal_selesai' => 'date',
-    'tanggal_surat_dasar' => 'date',
-];
+    protected $casts = [
+        'tanggal_mulai' => 'date',
+        'tanggal_selesai' => 'date',
+        'tanggal_surat_dasar' => 'date',
+    ];
 
-    protected $appends = ['kuota_terisi', 'teks_jadwal'];
+    protected $appends = ['kuota_terisi', 'teks_jadwal', 'hari_tanggal'];
 
     public function pendaftaran(): HasMany
     {
@@ -68,5 +68,21 @@ protected $casts = [
         }
 
         return $mulai->translatedFormat('d F Y') . ' - ' . $selesai->translatedFormat('d F Y');
+    }
+
+    public function getHariTanggalAttribute(): string
+    {
+        if (!$this->tanggal_mulai || !$this->tanggal_selesai) {
+            return '-';
+        }
+
+        $mulai = $this->tanggal_mulai->locale('id');
+        $selesai = $this->tanggal_selesai->locale('id');
+
+        if ($mulai->isSameDay($selesai)) {
+            return $mulai->translatedFormat('l, d F Y');
+        }
+
+        return $mulai->translatedFormat('l') . '-' . $selesai->translatedFormat('l') . ', ' . $this->teks_jadwal;
     }
 }

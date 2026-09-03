@@ -58,7 +58,7 @@
                                 @foreach ($kegiatanList as $k)
                                     <option
                                         value="{{ $k->id }}"
-                                        data-tanggal="{{ $k->tanggal }}"
+                                        data-tanggal="{{ $k->teks_jadwal }}"
                                         data-lokasi="{{ $k->lokasi }}"
                                         data-kuota="{{ $k->kuota_terisi }} dari {{ $k->kuota }} kuota terisi"
                                         {{ (string) old('kegiatan_id') === (string) $k->id ? 'selected' : '' }}

@@ -36,8 +36,9 @@ class Pendaftaran extends Model
     }
 
     /**
-     * Accessor kompatibilitas: view lama (daftar/sukses, status/index, sertifikat/index, dll)
-     * sudah ditulis mengakses $pendaftaran->nama_gelar / ->unit_kerja / ->jabatan langsung
+     * Accessor kompatibilitas: view lama (daftar/sukses, status/index, sertifikat/index,
+     * surat/surat-tugas, surat/sppd, dll) sudah ditulis mengakses $pendaftaran->nama_gelar /
+     * ->unit_kerja / ->jabatan / ->nip / ->nama_gelar_kepsek / ->nip_kepsek langsung
      * (bukan lewat ->peserta->...). Daripada mengubah semua view, alias-kan di sini.
      */
     public function getNamaGelarAttribute()
@@ -53,5 +54,20 @@ class Pendaftaran extends Model
     public function getJabatanAttribute()
     {
         return $this->peserta?->jabatan;
+    }
+
+    public function getNipAttribute()
+    {
+        return $this->peserta?->nip;
+    }
+
+    public function getNamaGelarKepsekAttribute()
+    {
+        return $this->peserta?->nama_gelar_kepsek;
+    }
+
+    public function getNipKepsekAttribute()
+    {
+        return $this->peserta?->nip_kepsek;
     }
 }

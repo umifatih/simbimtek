@@ -252,7 +252,7 @@
                                 <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-ink-900/[0.06] text-ink-900">
                                     <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 8.25h16.5M4.5 6h15a.75.75 0 01.75.75v12a.75.75 0 01-.75.75h-15a.75.75 0 01-.75-.75v-12A.75.75 0 014.5 6z"/></svg>
                                 </span>
-                                <span class="font-mono text-xs">{{ $k->tanggal }}</span>
+                                <span class="font-mono text-xs">{{ $k->teks_jadwal }}</span>
                             </div>
                             <div class="flex items-center gap-2.5">
                                 <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-ink-900/[0.06] text-ink-900">

@@ -11,12 +11,18 @@ return new class extends Migration
         Schema::create('kegiatan', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->string('tanggal'); // teks tampilan, mis. "14–16 Sep 2026"
-            $table->date('tanggal_mulai')->nullable();
-            $table->date('tanggal_selesai')->nullable();
+            $table->date('tanggal_mulai');
+            $table->date('tanggal_selesai');
+            $table->time('waktu')->nullable();
             $table->string('lokasi');
             $table->unsignedInteger('kuota')->default(40);
             $table->enum('status', ['dibuka', 'ditutup', 'selesai'])->default('dibuka');
+            $table->string('nomor_surat_dasar')->nullable();
+            $table->date('tanggal_surat_dasar')->nullable();
+            $table->string('nama_panitia')->nullable();
+            $table->string('nip_panitia')->nullable();
+            $table->string('nama_sekretaris')->nullable();
+            $table->string('nip_sekretaris')->nullable();
             $table->timestamps();
         });
     }

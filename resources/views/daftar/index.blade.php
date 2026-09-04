@@ -186,51 +186,46 @@
                 </form>
 
                 {{-- ===== SIDEBAR ===== --}}
-                <aside class="space-y-5 sm:space-y-6 lg:sticky lg:top-24 lg:col-span-4">
-                    <div class="rounded-2xl border border-line bg-white p-5 shadow-sm sm:p-6">
-                        <p class="font-display text-sm font-semibold text-ink-900">Alur berkas peserta</p>
-                        <ol class="mt-5 space-y-0">
-                            @php
-                                $tahapan = [
-                                    ['label' => 'Daftar Online', 'desc' => 'Sedang kamu isi sekarang'],
-                                    ['label' => 'Verifikasi Admin', 'desc' => 'Berkas diperiksa panitia'],
-                                    ['label' => 'Terbit SPPD', 'desc' => 'Surat tugas siap dicetak'],
-                                    ['label' => 'Sertifikat', 'desc' => 'Diunduh usai kegiatan'],
-                                ];
-                            @endphp
-                            @foreach ($tahapan as $i => $t)
-                                <li class="relative flex gap-4 pb-6 last:pb-0 sm:pb-7">
-                                    @if (!$loop->last)
-                                        <span class="absolute left-[15px] top-8 h-full w-px border-l-2 border-dashed border-line"></span>
-                                    @endif
-                                    <span @class([
-                                        'relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-mono text-xs font-semibold',
-                                        'bg-ink-900 text-canvas' => $loop->first,
-                                        'border-2 border-ink-900/30 bg-canvas text-ink-900' => !$loop->first,
-                                    ])>
-                                        {{ $i + 1 }}
-                                    </span>
-                                    <div class="pt-0.5">
-                                        <p class="text-sm font-semibold text-ink-900">{{ $t['label'] }}</p>
-                                        <p class="text-xs text-ink/55">{{ $t['desc'] }}</p>
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ol>
+<aside class="space-y-5 sm:space-y-6 lg:sticky lg:top-24 lg:col-span-4">
+    <div class="rounded-2xl border border-line bg-white p-5 shadow-sm sm:p-6">
+        <p class="font-display text-sm font-semibold text-ink-900">Alur berkas peserta</p>
+        <ol class="mt-5 space-y-0">
+            @php
+                $tahapan = [
+                    ['label' => 'Daftar Online', 'desc' => 'Sedang kamu isi sekarang'],
+                    ['label' => 'Terbit SPPD', 'desc' => 'Surat tugas siap dicetak'],
+                    ['label' => 'Sertifikat', 'desc' => 'Diunduh usai kegiatan'],
+                ];
+            @endphp
+            @foreach ($tahapan as $i => $t)
+                <li class="relative flex gap-4 pb-6 last:pb-0 sm:pb-7">
+                    @if (!$loop->last)
+                        <span class="absolute left-[15px] top-8 h-full w-px border-l-2 border-dashed border-line"></span>
+                    @endif
+                    <span @class([
+                        'relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-mono text-xs font-semibold',
+                        'bg-ink-900 text-canvas' => $loop->first,
+                        'border-2 border-ink-900/30 bg-canvas text-ink-900' => !$loop->first,
+                    ])>
+                        {{ $i + 1 }}
+                    </span>
+                    <div class="pt-0.5">
+                        <p class="text-sm font-semibold text-ink-900">{{ $t['label'] }}</p>
+                        <p class="text-xs text-ink/55">{{ $t['desc'] }}</p>
                     </div>
+                </li>
+            @endforeach
+        </ol>
+    </div>
 
-                    <div class="rounded-2xl border border-gold/25 bg-gold/[0.05] p-5 sm:p-6">
-                        <p class="font-display text-sm font-semibold text-ink-900">Butuh bantuan?</p>
-                        <p class="mt-2 text-sm leading-relaxed text-ink/65">
-                            Kalau ada kendala saat mengisi formulir, hubungi panitia bimtek pada jam kerja.
-                        </p>
-                        <p class="mt-3 font-mono text-sm font-semibold text-ink-900">0281-XXX-XXX</p>
-                    </div>
-                </aside>
-
-            </div>
-        </div>
-    </section>
+    <div class="rounded-2xl border border-gold/25 bg-gold/[0.05] p-5 sm:p-6">
+        <p class="font-display text-sm font-semibold text-ink-900">Butuh bantuan?</p>
+        <p class="mt-2 text-sm leading-relaxed text-ink/65">
+            Kalau ada kendala saat mengisi formulir, hubungi panitia bimtek pada jam kerja.
+        </p>
+        <p class="mt-3 font-mono text-sm font-semibold text-ink-900">0281-XXX-XXX</p>
+    </div>
+</aside>
 
     <script>
         const kegiatanSelect = document.getElementById('kegiatan-select');

@@ -33,9 +33,9 @@
                     </h1>
 
                     <p class="mt-4 max-w-xl text-sm leading-relaxed text-ink/70 sm:mt-6 sm:text-base lg:text-lg">
-                        SIMBIMTEK menyatukan pendaftaran, verifikasi, penerbitan SPPD, dan sertifikat
-                        bimbingan teknis dalam satu tempat — supaya peserta cukup daftar sekali, dan tahu
-                        persis di tahap mana berkasnya berada.
+                        SIMBIMTEK menyatukan pendaftaran, penerbitan SPPD, dan sertifikat
+                        bimbingan teknis dalam satu tempat — peserta cukup daftar sekali dengan NIP,
+                        dan data lamanya otomatis dipakai untuk kegiatan berikutnya.
                     </p>
 
                     <div class="mt-7 flex flex-col gap-3 sm:mt-9 sm:flex-row">
@@ -88,9 +88,8 @@
                         <ol class="mt-5 space-y-0">
                             @php
                                 $tahapan = [
-                                    ['label' => 'Daftar Online', 'desc' => 'Isi data & unggah berkas'],
-                                    ['label' => 'Verifikasi Admin', 'desc' => 'Berkas diperiksa panitia'],
-                                    ['label' => 'Terbit SPPD', 'desc' => 'Surat tugas siap dicetak'],
+                                    ['label' => 'Daftar Online', 'desc' => 'Isi data diri atau otomatis terisi dari NIP'],
+                                    ['label' => 'Terbit SPPD', 'desc' => 'Surat tugas siap dicetak langsung'],
                                     ['label' => 'Sertifikat', 'desc' => 'Diunduh usai kegiatan'],
                                 ];
                             @endphp
@@ -224,9 +223,6 @@
                 <p class="text-xs font-semibold uppercase tracking-wider text-gold-600">Jadwal Terdekat</p>
                 <h2 class="mt-2 font-display text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">Kegiatan yang sedang dibuka</h2>
             </div>
-            <a href="/jadwal" class="text-sm font-semibold text-ink-900 underline decoration-line underline-offset-4 hover:decoration-ink-900">
-                Lihat semua jadwal →
-            </a>
         </div>
 
         <div id="jadwal" class="mt-8 grid gap-5 sm:mt-10 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
@@ -313,8 +309,8 @@
                 @php
                     $fitur = [
                         [
-                            'judul' => 'Pendaftaran Online',
-                            'desc' => 'Isi formulir dan unggah berkas langsung dari HP, tanpa antre.',
+                            'judul' => 'Pendaftaran dengan NIP',
+                            'desc' => 'Isi NIP saja — kalau sudah pernah daftar, data lama otomatis terisi.',
                             'warna' => 'bg-ink-900/10 text-ink-900 group-hover:bg-ink-900 group-hover:text-white',
                             'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M9 8h1M6 3h9l4.5 4.5V19a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2z"/>',
                         ],
@@ -332,7 +328,7 @@
                         ],
                         [
                             'judul' => 'Cek Status Real-time',
-                            'desc' => 'Lihat tahap verifikasi berkas kapan pun, tanpa perlu bertanya.',
+                            'desc' => 'Lihat status pendaftaran, SPPD, dan sertifikat kapan pun tanpa perlu bertanya.',
                             'warna' => 'bg-[#3E6B8F]/10 text-[#3E6B8F] group-hover:bg-[#3E6B8F] group-hover:text-white',
                             'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>',
                         ],
@@ -359,42 +355,56 @@
     </div>
 
     {{-- ============ ALUR PENDAFTARAN DETAIL ============ --}}
-    <section id="alur" class="relative scroll-mt-24 overflow-hidden bg-white py-12 sm:py-16 lg:py-24">
-        <div class="pointer-events-none absolute -right-20 top-10 h-72 w-72 rounded-full bg-ink-700/[0.06] blur-3xl"></div>
-        <div class="pointer-events-none absolute -left-20 bottom-0 h-64 w-64 rounded-full bg-gold/10 blur-3xl"></div>
+<section id="alur" class="relative scroll-mt-24 overflow-hidden bg-white py-12 sm:py-16 lg:py-24">
+    <div class="pointer-events-none absolute -right-20 top-10 h-72 w-72 rounded-full bg-ink-700/[0.06] blur-3xl"></div>
+    <div class="pointer-events-none absolute -left-20 bottom-0 h-64 w-64 rounded-full bg-gold/10 blur-3xl"></div>
 
-        <div class="relative mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
-        <p class="text-xs font-semibold uppercase tracking-wider text-gold-600">Cara Kerja</p>
-        <h2 class="mt-2 max-w-xl font-display text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">Empat langkah, dari daftar sampai sertifikat</h2>
+    <div class="relative mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-gold-600">Cara Kerja</p>
+            <h2 class="mt-2 max-w-xl font-display text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">Tiga langkah, dari daftar sampai sertifikat</h2>
+        </div>
+        <a href="{{ route('cara-kerja') }}" class="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-ink-900 hover:text-gold-600">
+            Lihat detail lengkap &amp; FAQ
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+        </a>
+    </div>
 
-        <div class="relative mt-10 sm:mt-14">
-            {{-- garis penghubung horizontal, tampak di layar besar --}}
-            <div class="pointer-events-none absolute left-0 right-0 top-5 hidden border-t-2 border-dashed border-gold/40 lg:block"></div>
+    <div class="relative mt-10 sm:mt-14">
+        {{-- garis penghubung horizontal, tampak di layar besar --}}
+        <div class="pointer-events-none absolute left-0 right-0 top-5 hidden border-t-2 border-dashed border-gold/40 lg:block"></div>
 
-            <div class="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
-                @php
-                    $langkah = [
-                        ['no' => '01', 'judul' => 'Daftar online', 'desc' => 'Pilih kegiatan, isi data diri, unggah berkas pendukung, lalu cetak bukti pendaftaran.'],
-                        ['no' => '02', 'judul' => 'Diverifikasi admin', 'desc' => 'Panitia memeriksa kelengkapan berkas. Status berubah begitu verifikasi selesai.'],
-                        ['no' => '03', 'judul' => 'SPPD terbit', 'desc' => 'Setelah lolos verifikasi, Surat Perintah Perjalanan Dinas siap diunduh dan dicetak.'],
-                        ['no' => '04', 'judul' => 'Ikuti & unduh sertifikat', 'desc' => 'Hadir sesuai jadwal, absen lewat QR Code, sertifikat terbit usai kegiatan selesai.'],
-                    ];
-                @endphp
-                @foreach ($langkah as $l)
-                    <div class="relative">
-                        <span class="relative z-10 mb-4 flex h-10 w-10 items-center justify-center rounded-full border-2 border-gold bg-white font-mono text-xs font-bold text-ink-900">
-                            {{ $l['no'] }}
-                        </span>
-                        <div class="rounded-2xl border border-line bg-canvas/60 p-5 transition hover:border-gold/40 hover:bg-canvas sm:p-6">
-                            <h3 class="font-display text-base font-semibold text-ink-900">{{ $l['judul'] }}</h3>
-                            <p class="mt-2 text-sm leading-relaxed text-ink/60">{{ $l['desc'] }}</p>
-                        </div>
+        <div class="grid gap-5 sm:grid-cols-3 sm:gap-6">
+            @php
+                $langkah = [
+                    ['no' => '01', 'judul' => 'Daftar dengan NIP', 'desc' => 'Masukkan NIP — kalau sudah pernah terdaftar, data diri otomatis terisi.'],
+                    ['no' => '02', 'judul' => 'SPPD langsung terbit', 'desc' => 'Surat Tugas dan SPPD siap diunduh dan dicetak begitu formulir dikirim.'],
+                    ['no' => '03', 'judul' => 'Ikuti & unduh sertifikat', 'desc' => 'Hadir sesuai jadwal, absen lewat QR Code, sertifikat terbit usai kegiatan.'],
+                ];
+            @endphp
+            @foreach ($langkah as $l)
+                <div class="relative">
+                    <span class="relative z-10 mb-4 flex h-10 w-10 items-center justify-center rounded-full border-2 border-gold bg-white font-mono text-xs font-bold text-ink-900">
+                        {{ $l['no'] }}
+                    </span>
+                    <div class="rounded-2xl border border-line bg-canvas/60 p-5 transition hover:border-gold/40 hover:bg-canvas sm:p-6">
+                        <h3 class="font-display text-base font-semibold text-ink-900">{{ $l['judul'] }}</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-ink/60">{{ $l['desc'] }}</p>
                     </div>
-                @endforeach
-            </div>
+                </div>
+            @endforeach
         </div>
+
+        <div class="mt-8 flex justify-center sm:hidden">
+            <a href="{{ route('cara-kerja') }}" class="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900">
+                Lihat detail lengkap &amp; FAQ
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+            </a>
         </div>
-    </section>
+    </div>
+    </div>
+</section>
 
     {{-- gelombang: transisi putih -> navy --}}
     <div class="relative -mb-px h-8 w-full overflow-hidden sm:h-14" aria-hidden="true">
@@ -411,7 +421,7 @@
 
         <div class="relative mx-auto max-w-3xl px-5 text-center sm:px-6 lg:px-8">
             <h2 class="font-display text-xl font-bold text-canvas sm:text-2xl lg:text-3xl">Sudah daftar? Cek status berkasmu</h2>
-            <p class="mt-3 text-sm text-canvas/60 sm:text-base">Masukkan nomor pendaftaran untuk melihat tahap verifikasi, SPPD, dan sertifikat.</p>
+            <p class="mt-3 text-sm text-canvas/60 sm:text-base">Masukkan nomor pendaftaran untuk melihat status pendaftaran, SPPD, dan sertifikat.</p>
 
             <form action="/cek-status" method="GET" class="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-center">
                 <input

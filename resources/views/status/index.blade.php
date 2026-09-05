@@ -10,7 +10,6 @@
     $pendaftaran (kalau ada) diharapkan punya:
     ->nomor_pendaftaran, ->nama_gelar, ->unit_kerja, ->jabatan, ->id
     ->kegiatan->nama, ->kegiatan->tanggal
-    ->status  → salah satu: 'daftar' | 'verifikasi' | 'sppd' | 'sertifikat'
                (menentukan step mana yang aktif di stepper & apakah sertifikat sudah bisa diunduh)
 --}}
 @extends('layouts.app')
@@ -33,8 +32,7 @@
 
             <h1 class="mt-4 font-display text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl lg:text-4xl">Cek Status Pendaftaran</h1>
             <p class="mt-3 max-w-xl text-sm leading-relaxed text-ink/65 sm:text-base">
-                Masukkan nomor pendaftaran yang kamu dapat setelah mendaftar untuk melihat progres
-                verifikasi dan mengunduh dokumen.
+                Masukkan nomor pendaftaran yang kamu dapat setelah mendaftar dan mengunduh dokumen.
             </p>
 
             <form action="/cek-status" method="GET" class="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -60,7 +58,6 @@
                 @php
                     $tahapan = [
                         ['key' => 'daftar', 'label' => 'Daftar Online', 'desc' => 'Data pendaftaran diterima'],
-                        ['key' => 'verifikasi', 'label' => 'Verifikasi Admin', 'desc' => 'Kebenaran data diperiksa panitia'],
                         ['key' => 'sppd', 'label' => 'Surat Tugas & SPPD', 'desc' => 'Sudah bisa diunduh'],
                         ['key' => 'sertifikat', 'label' => 'Sertifikat', 'desc' => 'Terbit usai kegiatan selesai'],
                     ];

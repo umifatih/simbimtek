@@ -9,10 +9,9 @@ class BerandaController extends Controller
     public function index()
     {
         $kegiatanList = Kegiatan::withCount(['pendaftaran as kuota_terisi'])
-            ->where('status', 'dibuka')
-            ->orderBy('tanggal_mulai')
-            ->take(3)
-            ->get();
+            ->get()
+            ->sortBy(fn ($k) => ($k->status === 'selesai' ? '1' : '0') . '-' . $k->tanggal_mulai->format('Ymd'))
+            ->values();
 
         return view('beranda', compact('kegiatanList'));
     }

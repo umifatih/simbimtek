@@ -45,8 +45,6 @@ Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admi
 |--------------------------------------------------------------------------
 | Admin — Panel
 |--------------------------------------------------------------------------
-| TODO: bungkus grup ini dengan middleware('auth:admin') begitu login admin
-| sungguhan (bukan placeholder) sudah siap.
 */
 
 Route::prefix('admin')->group(function () {
@@ -58,9 +56,6 @@ Route::prefix('admin')->group(function () {
     Route::delete('/kegiatan/{kegiatan}', [AdminKegiatanController::class, 'destroy'])->name('admin.kegiatan.destroy');
 
     Route::get('/peserta', [AdminPesertaController::class, 'index'])->name('admin.peserta.index');
-    Route::get('/peserta/verifikasi', [AdminPesertaController::class, 'verifikasi'])->name('admin.peserta.verifikasi');
-    Route::post('/peserta/{pendaftaran}/setujui', [AdminPesertaController::class, 'setujui'])->name('admin.peserta.setujui');
-    Route::post('/peserta/{pendaftaran}/tolak', [AdminPesertaController::class, 'tolak'])->name('admin.peserta.tolak');
 
     Route::get('/absensi', fn () => view('admin.absensi.scan'))->name('absensi.scan.page');
     Route::post('/absensi/scan', [AbsensiController::class, 'scan'])->name('absensi.scan');

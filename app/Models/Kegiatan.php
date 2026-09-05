@@ -34,7 +34,7 @@ class Kegiatan extends Model
         'tanggal_surat_dasar' => 'date',
     ];
 
-    protected $appends = ['kuota_terisi', 'teks_jadwal', 'hari_tanggal'];
+    protected $appends = ['kuota_terisi', 'teks_jadwal', 'hari_tanggal', 'status_efektif'];
 
     public function pendaftaran(): HasMany
     {
@@ -85,4 +85,26 @@ class Kegiatan extends Model
 
         return $mulai->translatedFormat('l') . '-' . $selesai->translatedFormat('l') . ', ' . $this->teks_jadwal;
     }
+
+    public function getStatusEfektifAttribute(): string
+{
+    // Admin override manual selalu menang duluan
+    if ($this->status === 'selesai') {
+        return 'selesai';
+    }
+
+    if ($this->tanggal_selesai && $this->tanggal_selesai->lt(now()->startOfDay())) {
+        return 'selesai';
+    }
+
+    if ($this->status === 'ditutup') {
+        return 'ditutup';
+    }
+
+    if ($this->kuota > 0 && $this->kuota_terisi >= $this->kuota) {
+        return 'ditutup';
+    }
+
+    return 'dibuka';
+}
 }

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('unit_kerja');
             $table->string('pangkat_golongan');
             $table->string('tempat_tanggal_lahir');
-            $table->string('jabatan'); // 'Bendahara BOSP' | 'Operator BOSP'
+            $table->string('jabatan'); 
             $table->string('email');
             $table->string('nama_gelar_kepsek');
             $table->string('nip_kepsek')->nullable();

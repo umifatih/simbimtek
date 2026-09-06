@@ -10,7 +10,13 @@
     $pendaftaran (kalau ada) diharapkan punya:
     ->nomor_pendaftaran, ->nama_gelar, ->unit_kerja, ->jabatan, ->id
     ->kegiatan->nama, ->kegiatan->tanggal
+    ->progresAbsensi() → ['hadir' => int, 'wajib' => int]
+    ->absensiLengkap() → bool
                (menentukan step mana yang aktif di stepper & apakah sertifikat sudah bisa diunduh)
+
+    CATATAN: QR Kehadiran dipakai satu-satunya untuk check-in DAN absensi harian
+    (dipindai panitia via AbsensiController@scan) — sengaja tidak dipisah jadi
+    dua QR supaya tidak membingungkan peserta.
 --}}
 @extends('layouts.app')
 
@@ -65,6 +71,7 @@
                     $stepAktif = array_search($pendaftaran->status, $urutanStatus);
                     $stepAktif = $stepAktif === false ? 0 : $stepAktif;
                     $sertifikatSiap = $pendaftaran->status === 'sertifikat';
+                    $progres = $pendaftaran->progresAbsensi();
                 @endphp
 
                 <div class="rounded-2xl border border-line p-5 sm:p-7">
@@ -102,10 +109,10 @@
                     </dl>
                 </div>
 
-                {{-- ===== QR KEHADIRAN ===== --}}
+                {{-- ===== QR KEHADIRAN — satu-satunya QR, dipakai check-in & absensi harian ===== --}}
                 <div class="mt-5 rounded-2xl border border-line p-5 text-center sm:p-7">
                     <p class="font-display text-sm font-semibold text-ink-900">QR Kehadiran</p>
-                    <p class="mt-1 text-xs text-ink/55">Tunjukkan ini ke panitia saat check-in di lokasi kegiatan</p>
+                    <p class="mt-1 text-xs text-ink/55">Tunjukkan ini ke panitia untuk check-in dan absensi setiap hari kegiatan</p>
 
                     <div class="mx-auto mt-4 flex w-fit items-center justify-center rounded-xl border border-line bg-white p-3">
                         <div id="qr-peserta"></div>
@@ -145,30 +152,39 @@
                                         {{ $i + 1 }}
                                     @endif
                                 </span>
-                                <div class="pt-0.5">
+                                <div class="pt-0.5 w-full">
                                     <p @class([
                                         'text-sm font-semibold',
                                         'text-ink-900' => $i <= $stepAktif,
                                         'text-ink/40' => $i > $stepAktif,
                                     ])>{{ $t['label'] }}</p>
                                     <p class="text-xs text-ink/55">{{ $t['desc'] }}</p>
+
+                                    {{-- ===== Progres absensi harian — tampil khusus di step "Sertifikat" ===== --}}
+                                    @if ($t['key'] === 'sertifikat' && $i <= $stepAktif + 1 && $progres['wajib'] > 0)
+                                        <div class="mt-3 max-w-xs">
+                                            <div class="flex items-center justify-between text-xs">
+                                                <span class="font-medium text-ink/60">Absensi kehadiran</span>
+                                                <span class="font-mono font-semibold text-ink-900">{{ $progres['hadir'] }} / {{ $progres['wajib'] }} hari</span>
+                                            </div>
+                                            <div class="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-canvas">
+                                                <div
+                                                    class="h-full rounded-full transition-all"
+                                                    style="width: {{ min(100, round(($progres['hadir'] / $progres['wajib']) * 100)) }}%; background-color: {{ $sertifikatSiap ? '#16a34a' : '#C99A3D' }};"
+                                                ></div>
+                                            </div>
+                                            @unless ($sertifikatSiap)
+                                                <p class="mt-1.5 text-[11px] text-ink/45">
+                                                    Absen lewat QR Kehadiran di setiap hari kegiatan sampai lengkap, sertifikat baru bisa diunduh.
+                                                </p>
+                                            @endunless
+                                        </div>
+                                    @endif
                                 </div>
                             </li>
                         @endforeach
                     </ol>
                 </div>
-
-                {{-- ===== QR ABSENSI — tampil begitu Surat Tugas/SPPD terbit ===== --}}
-                @if (in_array($pendaftaran->status, ['sppd', 'sertifikat']))
-                    <div class="mt-5 rounded-2xl border border-line bg-canvas/60 p-5 text-center sm:p-7">
-                        <p class="font-display text-sm font-semibold text-ink-900">QR Absensi</p>
-                        <p class="mx-auto mt-1 max-w-xs text-xs text-ink/55">
-                            Tunjukkan QR ini ke panitia untuk dipindai saat kamu hadir di lokasi kegiatan.
-                        </p>
-                        <div id="qr-absensi" class="mx-auto mt-4 flex h-40 w-40 items-center justify-center rounded-xl border border-line bg-white p-2 sm:h-44 sm:w-44"></div>
-                        <p class="mt-3 font-mono text-xs text-ink/40">{{ $pendaftaran->nomor_pendaftaran }}</p>
-                    </div>
-                @endif
 
                 {{-- ===== UNDUH DOKUMEN ===== --}}
                 <h2 class="mt-7 font-display text-sm font-semibold text-ink-900 sm:mt-8">Dokumen</h2>
@@ -183,9 +199,8 @@
                     @endphp
                     @foreach ($dokumen as $d)
                         @if ($d['siap'])
-                            <a
-                                href="{{ route('pendaftaran.unduh', ['pendaftaran' => $pendaftaran->id, 'jenis' => $d['jenis']]) }}"
-                                class="group flex items-center justify-between gap-3 rounded-xl border border-line bg-white px-4 py-3.5 text-sm font-semibold text-ink-900 transition hover:border-gold/40 hover:bg-gold/[0.04]"
+                            <a href="{{ route('pendaftaran.unduh', ['pendaftaran' => $pendaftaran->id, 'jenis' => $d['jenis']]) }}"
+                               class="group flex items-center justify-between gap-3 rounded-xl border border-line bg-white px-4 py-3.5 text-sm font-semibold text-ink-900 transition hover:border-gold/40 hover:bg-gold/[0.04]"
                             >
                                 {{ $d['label'] }}
                                 <svg class="h-4 w-4 shrink-0 text-ink/40 transition group-hover:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m0 0l-6-6m6 6l6-6" /></svg>
@@ -258,18 +273,3 @@
     @endif
 
 @endsection
-
-@push('scripts')
-    @if ($dicari && $pendaftaran && in_array($pendaftaran->status, ['sppd', 'sertifikat']))
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-        <script>
-            new QRCode(document.getElementById('qr-absensi'), {
-                text: {{ Js::from($pendaftaran->nomor_pendaftaran) }},
-                width: 160,
-                height: 160,
-                colorDark: '#0F2A43',
-                colorLight: '#ffffff',
-            });
-        </script>
-    @endif
-@endpush

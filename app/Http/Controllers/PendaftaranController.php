@@ -7,6 +7,7 @@ use App\Models\Peserta;
 use App\Models\Pendaftaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 use PhpOffice\PhpWord\Element\TextRun;
 use PhpOffice\PhpWord\TemplateProcessor;
 
@@ -113,12 +114,32 @@ class PendaftaranController extends Controller
         $pendaftaran->load(['peserta', 'kegiatan']);
         $kegiatan = $pendaftaran->kegiatan;
 
+        // ===== Bukti Pendaftaran: langsung dirender jadi PDF dari Blade, tanpa docx =====
+        if ($jenis === 'bukti') {
+            $pdf = Pdf::loadView('dokumen.bukti-pendaftaran', compact('pendaftaran'))
+                ->setPaper('a4', 'portrait');
+
+            $namaFile = 'bukti-pendaftaran-' . Str::slug($pendaftaran->nama_gelar) . '.pdf';
+
+            return $pdf->download($namaFile);
+        }
+
         $templateMap = [
             'surat-tugas' => storage_path('app/templates/surat-tugas.docx'),
-            'sppd' => storage_path('app/templates/sppd.docx'),
+            'sppd'        => storage_path('app/templates/sppd.docx'),
+            'sertifikat'  => storage_path('app/templates/sertifikat.docx'),
         ];
 
         abort_unless(isset($templateMap[$jenis]), 404);
+
+        // Sertifikat cuma boleh diunduh kalau absensi sudah lengkap
+        if ($jenis === 'sertifikat') {
+            abort_unless(
+                $pendaftaran->status === 'sertifikat',
+                403,
+                'Sertifikat belum bisa diunduh — kehadiranmu belum tercatat lengkap.'
+            );
+        }
 
         $template = new TemplateProcessor($templateMap[$jenis]);
 
@@ -131,6 +152,7 @@ class PendaftaranController extends Controller
         $template->setValue('unit_kerja', strtoupper($pendaftaran->unit_kerja));
 
         // Data peserta
+        $template->setValue('nomor_pendaftaran', $pendaftaran->nomor_pendaftaran);
         $template->setValue('nama', $pendaftaran->nama_gelar);
         $template->setValue('nip', $pendaftaran->nip);
         $template->setValue('jabatan', $pendaftaran->jabatan);
@@ -152,9 +174,12 @@ class PendaftaranController extends Controller
         $template->setValue('tanggal_mulai', $kegiatan->tanggal_mulai->translatedFormat('d F Y'));
         $template->setValue('tanggal_ttd', $kegiatan->tanggal_mulai->translatedFormat('d F Y'));
 
-        // ===== Rincian perjalanan dinamis (khusus SPPD) =====
         if ($jenis === 'sppd') {
             $this->isiRincianPerjalanan($template, $kegiatan, $pendaftaran);
+        }
+
+        if ($jenis === 'sertifikat') {
+            $template->setValue('tanggal_selesai', $kegiatan->tanggal_selesai->translatedFormat('d F Y'));
         }
 
         $namaFile = $jenis . '-' . Str::slug($pendaftaran->nama_gelar) . '.docx';
@@ -166,6 +191,10 @@ class PendaftaranController extends Controller
 
         $pathSementara = $folderTmp . '/' . $namaFile;
         $template->saveAs($pathSementara);
+
+        if (in_array($jenis, ['surat-tugas', 'sppd']) && $pendaftaran->status === 'daftar') {
+            $pendaftaran->update(['status' => 'sppd']);
+        }
 
         return response()->download($pathSementara, $namaFile)->deleteFileAfterSend(true);
     }

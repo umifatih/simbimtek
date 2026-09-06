@@ -1,16 +1,5 @@
 {{--
     resources/views/daftar/sukses.blade.php
-
-    Variabel dari controller:
-    $pendaftaran->nomor_pendaftaran, ->nama_gelar, ->unit_kerja, ->jabatan,
-    ->kegiatan->nama, ->kegiatan->tanggal
-
-    Route unduhan: route('pendaftaran.unduh', ['pendaftaran' => $pendaftaran->id, 'jenis' => ...])
-
-    PERUBAHAN: kartu "Unduh Dokumen" sengaja ditaruh PALING ATAS (above the fold),
-    langsung setelah nomor pendaftaran, bukan di bawah ringkasan — supaya peserta
-    tidak perlu scroll untuk sampai ke aksi terpenting halaman ini. Ditambah sticky
-    bar di bawah layar khusus mobile sebagai jaring pengaman kedua.
 --}}
 @extends('layouts.app')
 
@@ -42,7 +31,7 @@
                 <span class="font-mono text-xs font-semibold tracking-wide text-ink-900">{{ $pendaftaran->nomor_pendaftaran }}</span>
             </div>
 
-            {{-- ===== UNDUH DOKUMEN — ditaruh langsung di sini, ini aksi utama halaman ===== --}}
+            {{-- ===== UNDUH DOKUMEN ===== --}}
             <div class="mt-7 rounded-2xl border-2 border-gold/30 bg-white p-4 text-left shadow-md shadow-ink-900/[0.05] sm:mt-8 sm:p-5">
                 <p class="text-xs font-semibold uppercase tracking-wider text-gold-600">Jangan lewatkan</p>
                 <h2 class="mt-1 font-display text-sm font-semibold text-ink-900 sm:text-base">
@@ -87,6 +76,9 @@
                             <span class="flex items-center gap-2.5">
                                 <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">{!! $d['icon'] !!}</svg>
                                 {{ $d['label'] }}
+                                @if ($d['jenis'] === 'bukti')
+                                    <span class="text-[10px] font-normal text-ink/40">(otomatis terunduh)</span>
+                                @endif
                             </span>
                             <svg class="h-4 w-4 shrink-0 transition group-hover:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m0 0l-6-6m6 6l6-6" /></svg>
                         </a>
@@ -96,7 +88,6 @@
         </div>
     </section>
 
-    {{-- padding bawah ekstra di mobile supaya konten tidak ketutup sticky bar --}}
     <section class="bg-white pb-24 sm:pb-0">
         <div class="mx-auto max-w-3xl px-5 pb-12 sm:px-6 sm:pb-16 lg:px-8">
 
@@ -122,9 +113,9 @@
                     </div>
                     <div>
                         <div>
-    <dt class="text-xs font-medium uppercase tracking-wide text-ink/40">Jadwal</dt>
-    <dd class="mt-1 font-mono text-sm text-ink-900">{{ $pendaftaran->kegiatan->teks_jadwal }}</dd>
-</div>
+                            <dt class="text-xs font-medium uppercase tracking-wide text-ink/40">Jadwal</dt>
+                            <dd class="mt-1 font-mono text-sm text-ink-900">{{ $pendaftaran->kegiatan->teks_jadwal }}</dd>
+                        </div>
                     </div>
                 </dl>
             </div>
@@ -171,7 +162,7 @@
         </div>
     </section>
 
-    {{-- ============ STICKY BAR — jaring pengaman kedua, khusus mobile ============ --}}
+    {{-- ============ STICKY BAR ============ --}}
     <div class="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-5 py-3 shadow-[0_-4px_16px_rgba(15,42,67,0.08)] backdrop-blur sm:hidden">
         <div class="flex items-center gap-2">
             <a
@@ -202,7 +193,6 @@
         });
 
         document.getElementById('btn-simpan-qr')?.addEventListener('click', () => {
-            // qrcodejs merender <img> atau <canvas> tergantung browser
             const canvas = qrContainer.querySelector('canvas');
             const img = qrContainer.querySelector('img');
             const dataUrl = canvas ? canvas.toDataURL('image/png') : img?.src;
@@ -212,6 +202,14 @@
             link.href = dataUrl;
             link.download = 'qr-{{ $pendaftaran->nomor_pendaftaran }}.png';
             link.click();
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const linkBukti = document.createElement('a');
+            linkBukti.href = "{{ route('pendaftaran.unduh', ['pendaftaran' => $pendaftaran->id, 'jenis' => 'bukti']) }}";
+            document.body.appendChild(linkBukti);
+            linkBukti.click();
+            linkBukti.remove();
         });
     </script>
 

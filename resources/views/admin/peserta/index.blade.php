@@ -19,8 +19,8 @@
         </select>
         <select name="status" onchange="this.form.submit()" class="shrink-0 rounded-full border border-line bg-white px-4 py-2.5 text-sm text-ink-900 outline-none focus:border-ink-900">
             <option value="">Semua Status</option>
-            <option value="daftar" @selected(request('status') === 'daftar')>Menunggu</option>
-            <option value="verifikasi" @selected(request('status') === 'verifikasi')>Terverifikasi</option>
+            <option value="daftar" @selected(request('status') === 'daftar')>Terdaftar</option>
+            <option value="sppd" @selected(request('status') === 'sppd')>SPPD Terbit</option>
             <option value="sertifikat" @selected(request('status') === 'sertifikat')>Selesai</option>
         </select>
         <button type="submit" class="hidden">Cari</button>
@@ -28,9 +28,8 @@
 
     @php
         $warnaStatus = [
-            'daftar' => ['Menunggu', 'bg-gold/15 text-gold-600'],
-            'verifikasi' => ['Terverifikasi', 'bg-[#3E6B8F]/10 text-[#3E6B8F]'],
-            'sppd' => ['Terverifikasi', 'bg-[#3E6B8F]/10 text-[#3E6B8F]'],
+            'daftar' => ['Terdaftar', 'bg-gold/15 text-gold-600'],
+            'sppd' => ['SPPD Terbit', 'bg-[#3E6B8F]/10 text-[#3E6B8F]'],
             'sertifikat' => ['Selesai', 'bg-success/10 text-success'],
         ];
     @endphp

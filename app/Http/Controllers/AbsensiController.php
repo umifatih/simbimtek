@@ -2,41 +2,72 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Absensi;
 use App\Models\Pendaftaran;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class AbsensiController extends Controller
 {
+    /**
+     * Dipanggil saat QR peserta dipindai panitia di lokasi kegiatan.
+     * Mencatat kehadiran untuk tanggal hari ini, dan otomatis menaikkan
+     * status pendaftaran jadi 'sertifikat' begitu absensi lengkap
+     * dari tanggal_mulai sampai tanggal_selesai kegiatan.
+     */
     public function scan(Request $request)
     {
-        $kode = trim($request->input('kode'));
+        $validated = $request->validate([
+            'token_kehadiran' => 'required|string',
+        ]);
 
-        $pendaftaran = Pendaftaran::with(['peserta', 'kegiatan'])
-            ->where('token_kehadiran', $kode)
+        $pendaftaran = Pendaftaran::with('kegiatan')
+            ->where('token_kehadiran', $validated['token_kehadiran'])
             ->first();
 
         if (! $pendaftaran) {
-            return response()->json([
-                'status' => 'gagal',
-                'pesan' => 'QR tidak dikenali',
+            throw ValidationException::withMessages([
+                'token_kehadiran' => 'QR tidak dikenali atau tidak valid.',
             ]);
         }
 
-        if ($pendaftaran->hadir_pada) {
-            return response()->json([
-                'status' => 'duplikat',
-                'nama' => $pendaftaran->nama_gelar,
-                'pesan' => 'Sudah absen pukul ' . $pendaftaran->hadir_pada->format('H:i'),
-            ]);
+        $kegiatan = $pendaftaran->kegiatan;
+        $hariIni = now()->toDateString();
+
+        abort_unless(
+            $hariIni >= $kegiatan->tanggal_mulai->toDateString()
+            && $hariIni <= $kegiatan->tanggal_selesai->toDateString(),
+            422,
+            'Hari ini di luar rentang tanggal kegiatan.'
+        );
+
+        $absensi = Absensi::firstOrCreate(
+            [
+                'pendaftaran_id' => $pendaftaran->id,
+                'tanggal_hadir'  => $hariIni,
+            ],
+            [
+                'waktu_scan' => now(),
+            ]
+        );
+
+        $sudahLengkap = $pendaftaran->absensiLengkap();
+
+        if ($sudahLengkap && $pendaftaran->status !== 'sertifikat') {
+            $pendaftaran->update(['status' => 'sertifikat']);
         }
 
-        $pendaftaran->update(['hadir_pada' => now()]);
+        $progres = $pendaftaran->progresAbsensi();
 
         return response()->json([
-            'status' => 'berhasil',
-            'nama' => $pendaftaran->nama_gelar,
-            'unit_kerja' => $pendaftaran->unit_kerja,
-            'kegiatan' => $pendaftaran->kegiatan->nama,
+            'berhasil'       => true,
+            'baru_dicatat'   => $absensi->wasRecentlyCreated,
+            'nama'           => $pendaftaran->nama_gelar,
+            'kegiatan'       => $kegiatan->nama,
+            'tanggal_hadir'  => $hariIni,
+            'progres'        => "{$progres['hadir']} dari {$progres['wajib']} hari",
+            'sudah_lengkap'  => $sudahLengkap,
+            'status'         => $pendaftaran->status,
         ]);
     }
 }

@@ -7,6 +7,9 @@ use App\Models\Peserta;
 use App\Models\Pendaftaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
+use PhpOffice\PhpWord\Element\TextRun;
+use PhpOffice\PhpWord\TemplateProcessor;
 
 class PendaftaranController extends Controller
 {
@@ -68,9 +71,6 @@ class PendaftaranController extends Controller
             'setuju'               => 'required',
         ]);
 
-        // Cari-atau-buat profil peserta berdasarkan NIP. Kalau sudah ada, datanya
-        // ditimpa dengan yang baru dikirim (jaga-jaga kalau memang ada perubahan,
-        // mis. pindah unit kerja atau ganti jabatan).
         $peserta = Peserta::updateOrCreate(
             ['nip' => $validated['nip']],
             [
@@ -85,7 +85,6 @@ class PendaftaranController extends Controller
             ]
         );
 
-        // Cegah daftar dobel untuk kegiatan yang sama (constraint unique di DB juga jaga ini)
         $sudahDaftar = Pendaftaran::where('peserta_id', $peserta->id)
             ->where('kegiatan_id', $validated['kegiatan_id'])
             ->first();
@@ -112,8 +111,129 @@ class PendaftaranController extends Controller
 
     public function unduh(Pendaftaran $pendaftaran, string $jenis)
     {
-        // TODO: generate PDF asli dari template pakai fpdi, isi dari
-        // $pendaftaran->peserta dan $pendaftaran->kegiatan.
-        return "Placeholder unduh dokumen: {$jenis} untuk {$pendaftaran->nomor_pendaftaran}";
+        $pendaftaran->load(['peserta', 'kegiatan']);
+        $kegiatan = $pendaftaran->kegiatan;
+
+        // ===== Bukti Pendaftaran: langsung dirender jadi PDF dari Blade, tanpa docx =====
+        if ($jenis === 'bukti') {
+            $pdf = Pdf::loadView('dokumen.bukti-pendaftaran', compact('pendaftaran'))
+                ->setPaper('a4', 'portrait');
+
+            $namaFile = 'bukti-pendaftaran-' . Str::slug($pendaftaran->nama_gelar) . '.pdf';
+
+            return $pdf->download($namaFile);
+        }
+
+        $templateMap = [
+            'surat-tugas' => storage_path('app/templates/surat-tugas.docx'),
+            'sppd'        => storage_path('app/templates/sppd.docx'),
+            'sertifikat'  => storage_path('app/templates/sertifikat.docx'),
+        ];
+
+        abort_unless(isset($templateMap[$jenis]), 404);
+
+        // Sertifikat cuma boleh diunduh kalau absensi sudah lengkap
+        if ($jenis === 'sertifikat') {
+            abort_unless(
+                $pendaftaran->status === 'sertifikat',
+                403,
+                'Sertifikat belum bisa diunduh — kehadiranmu belum tercatat lengkap.'
+            );
+        }
+
+        $template = new TemplateProcessor($templateMap[$jenis]);
+
+        // Unit kerja versi KOP SURAT: bold + ukuran 13, dipakai HANYA sekali di header
+        $unitKerjaKop = new TextRun();
+        $unitKerjaKop->addText(strtoupper($pendaftaran->unit_kerja), ['bold' => true, 'size' => 13]);
+        $template->setComplexValue('unit_kerja_kop', $unitKerjaKop);
+
+        // Unit kerja versi BADAN SURAT: teks polos, muncul berkali-kali (setValue otomatis ganti semua)
+        $template->setValue('unit_kerja', strtoupper($pendaftaran->unit_kerja));
+
+        // Data peserta
+        $template->setValue('nomor_pendaftaran', $pendaftaran->nomor_pendaftaran);
+        $template->setValue('nama', $pendaftaran->nama_gelar);
+        $template->setValue('nip', $pendaftaran->nip);
+        $template->setValue('jabatan', $pendaftaran->jabatan);
+        $template->setValue('nama_ks', $pendaftaran->nama_gelar_kepsek);
+        $template->setValue('nip_ks', $pendaftaran->nip_kepsek ?? '-');
+
+        // Data kegiatan
+        $template->setValue('nama_kegiatan', $kegiatan->nama);
+        $template->setValue('hari_tanggal', $kegiatan->hari_tanggal);
+        $template->setValue('waktu', substr($kegiatan->waktu, 0, 5));
+        $template->setValue('lokasi', $kegiatan->lokasi);
+        $template->setValue('nomor_surat_dasar', $kegiatan->nomor_surat_dasar ?? '-');
+        $template->setValue(
+            'tanggal_surat_dasar',
+            optional($kegiatan->tanggal_surat_dasar)->translatedFormat('d F Y') ?? '-'
+        );
+        $template->setValue('nama_panitia', $kegiatan->nama_panitia ?? '-');
+        $template->setValue('nip_panitia', $kegiatan->nip_panitia ?? '-');
+        $template->setValue('tanggal_mulai', $kegiatan->tanggal_mulai->translatedFormat('d F Y'));
+        $template->setValue('tanggal_ttd', $kegiatan->tanggal_mulai->translatedFormat('d F Y'));
+
+        if ($jenis === 'sppd') {
+            $this->isiRincianPerjalanan($template, $kegiatan, $pendaftaran);
+        }
+
+        if ($jenis === 'sertifikat') {
+            $template->setValue('tanggal_selesai', $kegiatan->tanggal_selesai->translatedFormat('d F Y'));
+        }
+
+        $namaFile = $jenis . '-' . Str::slug($pendaftaran->nama_gelar) . '.docx';
+        $folderTmp = storage_path('app/tmp');
+
+        if (!is_dir($folderTmp)) {
+            mkdir($folderTmp, 0755, true);
+        }
+
+        $pathSementara = $folderTmp . '/' . $namaFile;
+        $template->saveAs($pathSementara);
+
+        if (in_array($jenis, ['surat-tugas', 'sppd']) && $pendaftaran->status === 'daftar') {
+            $pendaftaran->update(['status' => 'sppd']);
+        }
+
+        return response()->download($pathSementara, $namaFile)->deleteFileAfterSend(true);
+    }
+
+    private function isiRincianPerjalanan(TemplateProcessor $template, Kegiatan $kegiatan, Pendaftaran $pendaftaran): void
+    {
+        $mulai = $kegiatan->tanggal_mulai;
+        $selesai = $kegiatan->tanggal_selesai;
+        $periode = \Carbon\CarbonPeriod::create($mulai, $selesai);
+        $jumlahHari = $mulai->diffInDays($selesai) + 1;
+
+        // Clone baris "hari" sebanyak jumlah hari kegiatan
+        $template->cloneRow('lokasi_hari', $jumlahHari);
+
+        foreach ($periode as $index => $tanggal) {
+            $ke = $index + 1; // PHPWord mulai indeks clone dari 1
+
+            $template->setValue("romawi_hari#{$ke}", $this->angkaRomawi($index + 2));
+            $template->setValue("lokasi_hari#{$ke}", $kegiatan->lokasi);
+            $template->setValue("tanggal_hari#{$ke}", $tanggal->translatedFormat('d F Y'));
+            $template->setValue("panitia_nama_hari#{$ke}", $kegiatan->nama_panitia ?? '-');
+            $template->setValue("panitia_nip_hari#{$ke}", $kegiatan->nip_panitia ?? '-');
+        }
+
+        // Baris terakhir (tiba kembali di sekolah asal)
+        $template->setValue('romawi_akhir', $this->angkaRomawi($jumlahHari + 2));
+        $template->setValue('tanggal_akhir', $selesai->translatedFormat('d F Y'));
+    }
+
+    private function angkaRomawi(int $angka): string
+    {
+        $map = ['M'=>1000,'CM'=>900,'D'=>500,'CD'=>400,'C'=>100,'XC'=>90,'L'=>50,'XL'=>40,'X'=>10,'IX'=>9,'V'=>5,'IV'=>4,'I'=>1];
+        $hasil = '';
+        foreach ($map as $roman => $nilai) {
+            while ($angka >= $nilai) {
+                $hasil .= $roman;
+                $angka -= $nilai;
+            }
+        }
+        return $hasil;
     }
 }

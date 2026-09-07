@@ -7,11 +7,10 @@
 @section('content')
 
     {{-- ===== STAT CARDS ===== --}}
-    <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+    <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
         @php
             $stat = [
                 ['label' => 'Total Peserta', 'nilai' => $totalPeserta, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>', 'warna' => 'bg-ink-900/10 text-ink-900'],
-                ['label' => 'Menunggu Verifikasi', 'nilai' => $menungguVerifikasi, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>', 'warna' => 'bg-gold/15 text-gold-600'],
                 ['label' => 'Kegiatan Aktif', 'nilai' => $kegiatanAktif, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>', 'warna' => 'bg-[#3E6B8F]/10 text-[#3E6B8F]'],
                 ['label' => 'Hadir Hari Ini', 'nilai' => $hadirHariIni, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.5A.75.75 0 014.5 3.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75v-4.5z"/>', 'warna' => 'bg-success/10 text-success'],
             ];
@@ -29,10 +28,10 @@
         @endforeach
     </div>
 
-    <div class="mt-6 grid gap-5 lg:grid-cols-3">
+    <div class="mt-6">
 
         {{-- ===== KEGIATAN BERJALAN ===== --}}
-        <div class="rounded-2xl border border-line bg-white p-5 sm:p-6 lg:col-span-2">
+        <div class="rounded-2xl border border-line bg-white p-5 sm:p-6">
             <div class="flex items-center justify-between">
                 <p class="font-display text-sm font-semibold text-ink-900">Kegiatan Berjalan</p>
                 <a href="/admin/kegiatan" class="text-xs font-semibold text-ink-900 underline underline-offset-2">Lihat semua</a>
@@ -52,26 +51,6 @@
             </div>
         </div>
 
-        {{-- ===== ANTREAN VERIFIKASI ===== --}}
-        <div class="rounded-2xl border border-line bg-white p-5 sm:p-6">
-            <div class="flex items-center justify-between">
-                <p class="font-display text-sm font-semibold text-ink-900">Perlu Diverifikasi</p>
-                <a href="/admin/peserta/verifikasi" class="text-xs font-semibold text-ink-900 underline underline-offset-2">Lihat semua</a>
-            </div>
-            <div class="mt-4 space-y-3">
-                @forelse ($antreanVerifikasi as $a)
-                    <div class="flex items-center gap-3 rounded-xl bg-canvas p-3">
-                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/15 text-xs font-semibold text-gold-600">{{ strtoupper(substr($a->nama_gelar, 0, 1)) }}</span>
-                        <div class="min-w-0">
-                            <p class="truncate text-xs font-semibold text-ink-900">{{ $a->nama_gelar }}</p>
-                            <p class="truncate text-[11px] text-ink/50">{{ $a->unit_kerja }}</p>
-                        </div>
-                    </div>
-                @empty
-                    <p class="py-8 text-center text-sm text-ink/40">Tidak ada antrean verifikasi.</p>
-                @endforelse
-            </div>
-        </div>
     </div>
 
 @endsection

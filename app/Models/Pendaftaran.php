@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Carbon\CarbonPeriod;
 
 class Pendaftaran extends Model
 {
@@ -35,11 +37,50 @@ class Pendaftaran extends Model
         return $this->belongsTo(Kegiatan::class);
     }
 
-    /**
-     * Accessor kompatibilitas: view lama (daftar/sukses, status/index, sertifikat/index, dll)
-     * sudah ditulis mengakses $pendaftaran->nama_gelar / ->unit_kerja / ->jabatan langsung
-     * (bukan lewat ->peserta->...). Daripada mengubah semua view, alias-kan di sini.
-     */
+    public function absensi(): HasMany
+    {
+        return $this->hasMany(Absensi::class);
+    }
+
+ 
+    public function absensiLengkap(): bool
+    {
+        if (! $this->kegiatan?->tanggal_mulai || ! $this->kegiatan?->tanggal_selesai) {
+            return false;
+        }
+
+        $periode = CarbonPeriod::create(
+            $this->kegiatan->tanggal_mulai,
+            $this->kegiatan->tanggal_selesai
+        );
+
+        $tanggalWajib = collect($periode)->map(fn ($t) => $t->toDateString());
+
+        $tanggalHadir = $this->absensi()
+            ->pluck('tanggal_hadir')
+            ->map(fn ($t) => $t->toDateString());
+
+        return $tanggalWajib->diff($tanggalHadir)->isEmpty();
+    }
+
+    public function progresAbsensi(): array
+    {
+        if (! $this->kegiatan?->tanggal_mulai || ! $this->kegiatan?->tanggal_selesai) {
+            return ['hadir' => 0, 'wajib' => 0];
+        }
+
+        $periode = CarbonPeriod::create(
+            $this->kegiatan->tanggal_mulai,
+            $this->kegiatan->tanggal_selesai
+        );
+
+        return [
+            'hadir' => $this->absensi()->count(),
+            'wajib' => collect($periode)->count(),
+        ];
+    }
+
+
     public function getNamaGelarAttribute()
     {
         return $this->peserta?->nama_gelar;
@@ -53,5 +94,20 @@ class Pendaftaran extends Model
     public function getJabatanAttribute()
     {
         return $this->peserta?->jabatan;
+    }
+
+    public function getNipAttribute()
+    {
+        return $this->peserta?->nip;
+    }
+
+    public function getNamaGelarKepsekAttribute()
+    {
+        return $this->peserta?->nama_gelar_kepsek;
+    }
+
+    public function getNipKepsekAttribute()
+    {
+        return $this->peserta?->nip_kepsek;
     }
 }

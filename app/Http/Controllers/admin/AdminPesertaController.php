@@ -35,31 +35,4 @@ class AdminPesertaController extends Controller
 
         return view('admin.peserta.index', compact('peserta', 'kegiatan'));
     }
-
-    public function verifikasi()
-    {
-        $antrean = Pendaftaran::with(['peserta', 'kegiatan'])
-            ->where('status', 'daftar')
-            ->oldest()
-            ->get();
-
-        return view('admin.peserta.verifikasi', compact('antrean'));
-    }
-
-    public function setujui(Pendaftaran $pendaftaran)
-    {
-        $pendaftaran->update(['status' => 'verifikasi']);
-
-        return back()->with('status', "{$pendaftaran->nama_gelar} berhasil diverifikasi.");
-    }
-
-    public function tolak(Pendaftaran $pendaftaran)
-    {
-        // TODO: putuskan kebijakan sebenarnya — hapus pendaftaran, atau simpan dengan
-        // status 'ditolak' + alasan? Untuk sekarang pendaftaran dihapus.
-        $nama = $pendaftaran->nama_gelar;
-        $pendaftaran->delete();
-
-        return back()->with('status', "Pendaftaran {$nama} ditolak dan dihapus.");
-    }
 }

@@ -33,18 +33,28 @@ class AdminKegiatanController extends Controller
         return back()->with('status', 'Kegiatan berhasil diperbarui.');
     }
 
-    private function validasi(Request $request): array
-    {
-        return $request->validate([
-            'nama' => 'required|string|max:255',
-            'tanggal' => 'required|string|max:100',
-            'tanggal_mulai' => 'nullable|date',
-            'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
-            'lokasi' => 'required|string|max:255',
-            'kuota' => 'required|integer|min:1',
-            'status' => 'required|in:dibuka,ditutup,selesai',
-        ]);
+  private function validasi(Request $request): array
+{
+    if ($request->filled('waktu')) {
+        $request->merge(['waktu' => substr($request->waktu, 0, 5)]);
     }
+
+    return $request->validate([
+        'nama' => 'required|string|max:255',
+        'tanggal_mulai' => 'required|date',
+        'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+        'waktu' => 'required|date_format:H:i',
+        'lokasi' => 'required|string|max:255',
+        'kuota' => 'required|integer|min:1',
+        'status' => 'required|in:dibuka,ditutup,selesai',
+        'nomor_surat_dasar' => 'nullable|string|max:255',
+        'tanggal_surat_dasar' => 'nullable|date',
+        'nama_panitia' => 'nullable|string|max:255',
+        'nip_panitia' => 'nullable|string|max:50',
+        'nama_sekretaris' => 'nullable|string|max:255',
+        'nip_sekretaris' => 'nullable|string|max:50',
+    ]);
+}
 
     public function destroy(Kegiatan $kegiatan)
     {

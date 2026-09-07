@@ -31,18 +31,25 @@
         $labelStatus = ['dibuka' => 'Dibuka', 'ditutup' => 'Ditutup', 'selesai' => 'Selesai'];
     @endphp
 
+    {{-- Mobile: kartu --}}
     <div class="mt-5 space-y-3 sm:hidden">
         @forelse ($kegiatan as $k)
             @php
                 $dataEdit = [
                     'id' => $k->id,
                     'nama' => $k->nama,
-                    'tanggal' => $k->tanggal,
-                    'tanggal_mulai' => optional($k->tanggal_mulai)->format('Y-m-d'),
-                    'tanggal_selesai' => optional($k->tanggal_selesai)->format('Y-m-d'),
+                    'tanggal_mulai' => $k->tanggal_mulai ? $k->tanggal_mulai->format('Y-m-d') : '',
+                    'tanggal_selesai' => $k->tanggal_selesai ? $k->tanggal_selesai->format('Y-m-d') : '',
+                    'waktu' => $k->waktu ? substr($k->waktu, 0, 5) : '',
                     'lokasi' => $k->lokasi,
                     'kuota' => $k->kuota,
                     'status' => $k->status,
+                    'nomor_surat_dasar' => $k->nomor_surat_dasar,
+                    'tanggal_surat_dasar' => $k->tanggal_surat_dasar ? $k->tanggal_surat_dasar->format('Y-m-d') : '',
+                    'nama_panitia' => $k->nama_panitia,
+                    'nip_panitia' => $k->nip_panitia,
+                    'nama_sekretaris' => $k->nama_sekretaris,
+                    'nip_sekretaris' => $k->nip_sekretaris,
                 ];
             @endphp
             <div class="rounded-2xl border border-line bg-white p-4">
@@ -50,7 +57,7 @@
                     <p class="text-sm font-semibold text-ink-900">{{ $k->nama }}</p>
                     <span @class(['shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold', $warnaStatus[$k->status]])>{{ $labelStatus[$k->status] }}</span>
                 </div>
-                <p class="mt-1.5 font-mono text-xs text-ink/50">{{ $k->tanggal }}</p>
+                <p class="mt-1.5 font-mono text-xs text-ink/50">{{ $k->teks_jadwal }}</p>
                 <p class="mt-0.5 text-xs text-ink/50">{{ $k->lokasi }}</p>
                 <div class="mt-3 flex items-center justify-between border-t border-line pt-3">
                     <span class="text-xs font-medium text-ink/60">Kuota {{ $k->pendaftaran_count }}/{{ $k->kuota }}</span>
@@ -68,6 +75,7 @@
         @endforelse
     </div>
 
+    {{-- Desktop: tabel --}}
     <div class="mt-5 hidden overflow-hidden rounded-2xl border border-line bg-white sm:block">
         <table class="w-full text-left text-sm">
             <thead class="border-b border-line bg-canvas/60 text-xs font-semibold uppercase tracking-wide text-ink/45">
@@ -86,17 +94,23 @@
                         $dataEdit = [
                             'id' => $k->id,
                             'nama' => $k->nama,
-                            'tanggal' => $k->tanggal,
-                            'tanggal_mulai' => optional($k->tanggal_mulai)->format('Y-m-d'),
-                            'tanggal_selesai' => optional($k->tanggal_selesai)->format('Y-m-d'),
+                            'tanggal_mulai' => $k->tanggal_mulai ? $k->tanggal_mulai->format('Y-m-d') : '',
+                            'tanggal_selesai' => $k->tanggal_selesai ? $k->tanggal_selesai->format('Y-m-d') : '',
+                            'waktu' => $k->waktu ? substr($k->waktu, 0, 5) : '',
                             'lokasi' => $k->lokasi,
                             'kuota' => $k->kuota,
                             'status' => $k->status,
+                            'nomor_surat_dasar' => $k->nomor_surat_dasar,
+                            'tanggal_surat_dasar' => $k->tanggal_surat_dasar ? $k->tanggal_surat_dasar->format('Y-m-d') : '',
+                            'nama_panitia' => $k->nama_panitia,
+                            'nip_panitia' => $k->nip_panitia,
+                            'nama_sekretaris' => $k->nama_sekretaris,
+                            'nip_sekretaris' => $k->nip_sekretaris,
                         ];
                     @endphp
                     <tr class="transition hover:bg-canvas/40">
                         <td class="px-5 py-3.5 font-medium text-ink-900">{{ $k->nama }}</td>
-                        <td class="px-5 py-3.5 font-mono text-xs text-ink/60">{{ $k->tanggal }}</td>
+                        <td class="px-5 py-3.5 font-mono text-xs text-ink/60">{{ $k->teks_jadwal }}</td>
                         <td class="px-5 py-3.5 text-ink/60">{{ $k->lokasi }}</td>
                         <td class="px-5 py-3.5 text-ink/60">{{ $k->pendaftaran_count }}/{{ $k->kuota }}</td>
                         <td class="px-5 py-3.5">
@@ -120,7 +134,7 @@
 
     {{-- ============ MODAL TAMBAH / EDIT KEGIATAN ============ --}}
     <div id="modal-overlay" class="fixed inset-0 z-50 hidden items-center justify-center bg-ink-900/40 p-4" onclick="if (event.target === this) tutupModal()">
-        <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-6">
+        <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-xl sm:p-6">
             <div class="flex items-center justify-between">
                 <h3 id="modal-judul" class="font-display text-base font-semibold text-ink-900">Tambah Kegiatan</h3>
                 <button type="button" onclick="tutupModal()" class="flex h-8 w-8 items-center justify-center rounded-lg text-ink/40 hover:bg-canvas hover:text-ink-900">
@@ -128,54 +142,103 @@
                 </button>
             </div>
 
-            <form id="form-kegiatan" method="POST" class="mt-5 space-y-4">
+            <form id="form-kegiatan" method="POST" class="mt-5 space-y-5">
                 @csrf
                 <input type="hidden" name="_method" id="form-method" value="">
 
-                <div>
-                    <label class="text-sm font-semibold text-ink-900">Nama Kegiatan</label>
-                    <input type="text" name="nama" id="input-nama" required placeholder="Contoh: Bimtek Pengelolaan Keuangan Desa" class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
-                </div>
+                {{-- Bagian 1: Data Kegiatan --}}
+                <div class="space-y-4">
+                    <p class="text-xs font-bold uppercase tracking-wider text-ink/40">Informasi Kegiatan</p>
 
-                <div>
-                    <label class="text-sm font-semibold text-ink-900">Jadwal (teks tampilan)</label>
-                    <input type="text" name="tanggal" id="input-tanggal" required placeholder="Contoh: 14–16 Sep 2026" class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-sm font-semibold text-ink-900">Tgl Mulai</label>
-                        <input type="date" name="tanggal_mulai" id="input-tanggal_mulai" class="mt-2 w-full rounded-xl border border-line bg-white px-3 py-3 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                        <label class="text-sm font-semibold text-ink-900">Nama Kegiatan</label>
+                        <input type="text" name="nama" id="input-nama" required placeholder="Contoh: Bimbingan Teknis Pergeseran 2 ARKAS..." class="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
                     </div>
-                    <div>
-                        <label class="text-sm font-semibold text-ink-900">Tgl Selesai</label>
-                        <input type="date" name="tanggal_selesai" id="input-tanggal_selesai" class="mt-2 w-full rounded-xl border border-line bg-white px-3 py-3 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-sm font-semibold text-ink-900">Tanggal Mulai</label>
+                            <input type="date" name="tanggal_mulai" id="input-tanggal_mulai" required class="mt-1.5 w-full rounded-xl border border-line bg-white px-3 py-2.5 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-ink-900">Tanggal Selesai</label>
+                            <input type="date" name="tanggal_selesai" id="input-tanggal_selesai" required class="mt-1.5 w-full rounded-xl border border-line bg-white px-3 py-2.5 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-sm font-semibold text-ink-900">Waktu Mulai</label>
+                            <input type="time" name="waktu" id="input-waktu" required class="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-ink-900">Lokasi / Tempat</label>
+                            <input type="text" name="lokasi" id="input-lokasi" required placeholder="Aula Korwilcam..." class="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-sm font-semibold text-ink-900">Kuota Peserta</label>
+                            <input type="number" name="kuota" id="input-kuota" required min="1" value="40" class="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-ink-900">Status Pendaftaran</label>
+                            <select name="status" id="input-status" required class="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                                <option value="dibuka">Dibuka</option>
+                                <option value="ditutup">Ditutup</option>
+                                <option value="selesai">Selesai</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <div>
-                    <label class="text-sm font-semibold text-ink-900">Lokasi</label>
-                    <input type="text" name="lokasi" id="input-lokasi" required placeholder="Contoh: Aula Diklat, Purbalingga" class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                <hr class="border-line">
+
+                {{-- Bagian 2: Data Surat & Kepanitiaan --}}
+                <div class="space-y-4">
+                    <p class="text-xs font-bold uppercase tracking-wider text-ink/40">Data Dasar Surat & Panitia</p>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-sm font-semibold text-ink-900">Nomor Surat Dasar</label>
+                            <input type="text" name="nomor_surat_dasar" id="input-nomor_surat_dasar" placeholder="005/10/Pan/XI/2024" class="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                            <p class="mt-1 text-[11px] text-ink/40">Dipakai untuk bagian "Dasar" di Surat Tugas & SPPD</p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-ink-900">Tanggal Surat Dasar</label>
+                            <input type="date" name="tanggal_surat_dasar" id="input-tanggal_surat_dasar" class="mt-1.5 w-full rounded-xl border border-line bg-white px-3 py-2.5 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-sm font-semibold text-ink-900">Nama Ketua Panitia</label>
+                            <input type="text" name="nama_panitia" id="input-nama_panitia" placeholder="SLAMET PURWANTO, S.Pd" class="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-ink-900">NIP Ketua Panitia</label>
+                            <input type="text" name="nip_panitia" id="input-nip_panitia" placeholder="19690312 200212..." class="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-sm font-semibold text-ink-900">Nama Sekretaris</label>
+                            <input type="text" name="nama_sekretaris" id="input-nama_sekretaris" placeholder="Nama Sekretaris, S.Pd" class="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-ink-900">NIP Sekretaris</label>
+                            <input type="text" name="nip_sekretaris" id="input-nip_sekretaris" placeholder="19700101 200003..." class="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                        </div>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-sm font-semibold text-ink-900">Kuota</label>
-                        <input type="number" name="kuota" id="input-kuota" required min="1" value="40" class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold text-ink-900">Status</label>
-                        <select name="status" id="input-status" required class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
-                            <option value="dibuka">Dibuka</option>
-                            <option value="ditutup">Ditutup</option>
-                            <option value="selesai">Selesai</option>
-                        </select>
-                    </div>
+                <div class="pt-2">
+                    <button type="submit" class="w-full rounded-full bg-ink-900 px-6 py-3.5 text-sm font-semibold text-canvas transition hover:bg-ink-700">
+                        Simpan Data Kegiatan
+                    </button>
                 </div>
-
-                <button type="submit" class="w-full rounded-full bg-ink-900 px-6 py-3.5 text-sm font-semibold text-canvas transition hover:bg-ink-700">
-                    Simpan
-                </button>
             </form>
         </div>
     </div>
@@ -201,24 +264,37 @@
             formKegiatan.reset();
             formKegiatan.action = '{{ route('admin.kegiatan.store') }}';
             formMethod.value = '';
+
+            // Set default value untuk mempermudah admin
             document.getElementById('input-kuota').value = 40;
+            document.getElementById('input-waktu').value = '07:00';
+
             bukaModal();
         }
 
         function bukaModalEdit(data) {
             modalJudul.textContent = 'Edit Kegiatan';
+
+            // Data Utama
             document.getElementById('input-nama').value = data.nama ?? '';
-            document.getElementById('input-tanggal').value = data.tanggal ?? '';
             document.getElementById('input-tanggal_mulai').value = data.tanggal_mulai ?? '';
             document.getElementById('input-tanggal_selesai').value = data.tanggal_selesai ?? '';
+            document.getElementById('input-waktu').value = data.waktu ?? '';
             document.getElementById('input-lokasi').value = data.lokasi ?? '';
             document.getElementById('input-kuota').value = data.kuota ?? 40;
             document.getElementById('input-status').value = data.status ?? 'dibuka';
+
+            // Data Surat & Panitia
+            document.getElementById('input-nomor_surat_dasar').value = data.nomor_surat_dasar ?? '';
+            document.getElementById('input-tanggal_surat_dasar').value = data.tanggal_surat_dasar ?? '';
+            document.getElementById('input-nama_panitia').value = data.nama_panitia ?? '';
+            document.getElementById('input-nip_panitia').value = data.nip_panitia ?? '';
+            document.getElementById('input-nama_sekretaris').value = data.nama_sekretaris ?? '';
+            document.getElementById('input-nip_sekretaris').value = data.nip_sekretaris ?? '';
 
             formKegiatan.action = `/admin/kegiatan/${data.id}`;
             formMethod.value = 'PUT';
             bukaModal();
         }
     </script>
-
 @endsection

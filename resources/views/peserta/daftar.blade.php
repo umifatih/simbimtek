@@ -153,8 +153,19 @@
                                     <option value="" {{ old('jabatan') ? '' : 'selected' }}>— Pilih jabatan —</option>
                                     <option value="Bendahara BOSP" {{ old('jabatan') === 'Bendahara BOSP' ? 'selected' : '' }}>Bendahara BOSP</option>
                                     <option value="Operator BOSP" {{ old('jabatan') === 'Operator BOSP' ? 'selected' : '' }}>Operator BOSP</option>
+                                    <option value="lainnya" {{ old('jabatan') === 'lainnya' ? 'selected' : '' }}>Lainnya</option>
                                 </select>
                                 @error('jabatan') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
+
+                                <input
+                                    type="text"
+                                    id="jabatan_lainnya"
+                                    name="jabatan_lainnya"
+                                    value="{{ old('jabatan_lainnya') }}"
+                                    placeholder="Tulis jabatan lain"
+                                    class="mt-2 w-full {{ old('jabatan') === 'lainnya' ? '' : 'hidden' }} rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none transition placeholder:text-ink/35 focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10"
+                                >
+                                @error('jabatan_lainnya') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                             </div>
 
                             <div>
@@ -280,6 +291,24 @@
             e.target.setSelectionRange(pos, pos);
         });
 
+        // Jabatan: munculkan kolom manual saat "Lainnya" dipilih
+        const jabatanSelect = document.getElementById('jabatan');
+        const jabatanLainnya = document.getElementById('jabatan_lainnya');
+
+        function syncJabatanLainnya() {
+            if (jabatanSelect.value === 'lainnya') {
+                jabatanLainnya.classList.remove('hidden');
+                jabatanLainnya.required = true;
+            } else {
+                jabatanLainnya.classList.add('hidden');
+                jabatanLainnya.required = false;
+                jabatanLainnya.value = '';
+            }
+        }
+
+        jabatanSelect?.addEventListener('change', syncJabatanLainnya);
+        syncJabatanLainnya();
+
         // =====================================================================
         // KOMPONEN COMBOBOX PENCARIAN (dipakai untuk 3 kolom: unit_kerja, nama, nip)
         // =====================================================================
@@ -322,6 +351,14 @@
                 });
                 // pastikan Unit Kerja tetap huruf kapital sesuai aturan form
                 if (fieldPeserta.unit_kerja) fieldPeserta.unit_kerja.value = fieldPeserta.unit_kerja.value.toUpperCase();
+
+                // Kalau jabatan hasil data lama bukan salah satu opsi baku, tampilkan sebagai "Lainnya"
+                const opsiBaku = ['Bendahara BOSP', 'Operator BOSP'];
+                if (fieldPeserta.jabatan.value && !opsiBaku.includes(fieldPeserta.jabatan.value)) {
+                    jabatanLainnya.value = fieldPeserta.jabatan.value;
+                    fieldPeserta.jabatan.value = 'lainnya';
+                }
+                syncJabatanLainnya();
 
                 tampilkanStatusNip('✓ Data ditemukan dari pendaftaran sebelumnya, otomatis diisi. Silakan periksa kembali.', 'text-success');
             } catch (e) {

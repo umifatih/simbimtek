@@ -120,12 +120,19 @@ class PendaftaranController extends Controller
             'pangkat_golongan'     => 'required|string|max:100',
             'tempat_lahir'         => 'required|string|max:100',
             'tanggal_lahir'        => 'required|date',
-            'jabatan'              => 'required|in:Bendahara BOSP,Operator BOSP',
+            'jabatan'              => 'required|in:Bendahara BOSP,Operator BOSP,lainnya',
+            'jabatan_lainnya'      => 'nullable|string|max:100|required_if:jabatan,lainnya',
             'email'                => 'required|email|max:255',
             'nama_gelar_kepsek'    => 'required|string|max:255',
             'nip_kepsek'           => 'nullable|string|max:30',
             'setuju'               => 'required',
         ]);
+
+        // Kalau peserta pilih "Lainnya", ganti nilai jabatan dengan teks yang mereka tulis
+        if ($validated['jabatan'] === 'lainnya') {
+            $validated['jabatan'] = $validated['jabatan_lainnya'];
+        }
+        unset($validated['jabatan_lainnya']);
 
         $peserta = Peserta::updateOrCreate(
             ['nip' => $validated['nip']],

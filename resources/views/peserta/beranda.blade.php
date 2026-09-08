@@ -20,12 +20,10 @@
                         Sistem Informasi Manajemen Bimtek
                     </span>
 
-                    {{-- [DINAMIS] tagline dari pengaturan admin, tanpa efek coretan manual --}}
                     <h1 class="mt-5 font-display text-[2rem] font-bold leading-[1.15] tracking-tight text-ink-900 sm:mt-6 sm:text-4xl md:text-5xl lg:text-[3.4rem] lg:leading-[1.1]">
                         {{ $setting->tagline }}
                     </h1>
 
-                    {{-- [DINAMIS] deskripsi hero --}}
                     <p class="mt-4 max-w-xl text-sm leading-relaxed text-ink/70 sm:mt-6 sm:text-base lg:text-lg">
                         {{ $setting->deskripsi }}
                     </p>
@@ -66,7 +64,6 @@
                             <circle cx="50" cy="50" r="46" fill="#F5F7F6" stroke="#C99A3D" stroke-width="1.6" stroke-dasharray="2.5 3.5"/>
                             <circle cx="50" cy="50" r="37" fill="none" stroke="#0F2A43" stroke-width="1"/>
                             <path id="sealPath" d="M 50,50 m -30,0 a 30,30 0 1,1 60,0 a 30,30 0 1,1 -60,0" fill="none"/>
-                            {{-- [DINAMIS] nama aplikasi di stempel --}}
                             <text font-size="7.2" fill="#0F2A43" letter-spacing="2.2" font-family="'JetBrains Mono', monospace" font-weight="500">
                                 <textPath href="#sealPath" startOffset="2%">{{ strtoupper($setting->nama_aplikasi) }} • SISTEM RESMI •</textPath>
                             </text>
@@ -123,7 +120,6 @@
 
                 <div class="lg:col-span-5">
                     <p class="text-xs font-semibold uppercase tracking-wider text-gold-600">Tentang Program</p>
-                    {{-- [DINAMIS] judul & deskripsi tentang program --}}
                     <h2 class="mt-2 font-display text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
                         {{ $setting->tentang_program_judul }}
                     </h2>
@@ -184,24 +180,24 @@
                                 </div>
                                 <p class="mt-3 font-display text-sm font-semibold text-ink-900">{{ $m['judul'] }}</p>
                                 <p class="mt-1.5 text-sm leading-relaxed text-ink/60">{{ $m['desc'] }}</p>
-                            </div>
-                        @endforeach
-                    </div>
+                          </div>
+                      @endforeach
+                  </div>
 
-                    <div class="mt-5 flex items-start gap-3 rounded-xl bg-canvas p-4">
-                        <svg class="mt-0.5 h-4 w-4 shrink-0 text-ink/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
-                        <p class="text-xs leading-relaxed text-ink/60">
-                            Peserta cukup membawa Surat Tugas dan SPPD yang sudah diunduh otomatis setelah
-                            mendaftar — lihat jadwal kegiatan yang sedang dibuka di bawah ini.
-                        </p>
-                    </div>
-                </div>
+                  <div class="mt-5 flex items-start gap-3 rounded-xl bg-canvas p-4">
+                      <svg class="mt-0.5 h-4 w-4 shrink-0 text-ink/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
+                      <p class="text-xs leading-relaxed text-ink/60">
+                          Peserta cukup membawa Surat Tugas dan SPPD yang sudah diunduh otomatis setelah
+                          mendaftar — lihat jadwal kegiatan yang sedang dibuka di bawah ini.
+                      </p>
+                  </div>
+              </div>
 
-            </div>
+          </div>
         </div>
     </section>
 
-   {{-- ============ KEGIATAN TERDEKAT — carousel ============ --}}
+    {{-- ============ KEGIATAN TERDEKAT — carousel & modal ============ --}}
 <section id="kegiatan" class="relative scroll-mt-24 overflow-hidden bg-white py-2 sm:py-4">
     <div class="pointer-events-none absolute -left-16 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-ink-900/[0.05] blur-3xl"></div>
     <div class="pointer-events-none absolute -right-10 bottom-0 h-56 w-56 rounded-full bg-gold/10 blur-3xl"></div>
@@ -246,7 +242,18 @@
                             default => 'Kuota Tersedia',
                         };
                     @endphp
-                    <div class="group relative w-[85%] shrink-0 snap-start overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-line transition hover:-translate-y-1 hover:shadow-xl hover:shadow-ink-900/[0.08] sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]">
+                    <div 
+                        onclick="bukaModalDetail({
+                            nama: '{{ addslashes($k->nama) }}',
+                            jadwal: '{{ addslashes($k->teks_jadwal) }}',
+                            lokasi: '{{ addslashes($k->lokasi) }}',
+                            kuota: '{{ $k->kuota }}',
+                            terisi: '{{ $k->kuota_terisi }}',
+                            status: '{{ $statusLabel }}',
+                            waktu: '{{ addslashes($k->waktu ?? '-') }}'
+                        })"
+                        class="group relative w-[85%] shrink-0 snap-start overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-line transition hover:-translate-y-1 hover:shadow-xl hover:shadow-ink-900/[0.08] sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] cursor-pointer"
+                    >
                         <div @class([
                             'h-1.5 w-full',
                             'bg-ink-900/20' => $sudahSelesai,
@@ -290,15 +297,7 @@
                                     {{ $k->kuota_terisi }} dari {{ $k->kuota }} kuota
                                 @endif
                             </span>
-                            <span @class([
-                                'rounded-full px-3 py-1 text-xs font-semibold',
-                                'bg-ink-900/10 text-ink/50' => $sudahSelesai,
-                                'bg-red-50 text-red-500' => $statusLabel === 'Pendaftaran Ditutup',
-                                'bg-success/10 text-success' => $statusLabel === 'Kuota Tersedia',
-                                'bg-gold/15 text-gold-600' => $statusLabel === 'Segera Ditutup',
-                            ])>
-                                {{ $statusLabel }}
-                            </span>
+                            <span class="text-xs font-semibold text-gold-600 underline">Detail &rarr;</span>
                         </div>
                     </div>
                 @endforeach
@@ -316,7 +315,125 @@
             @endif
         @endif
     </div>
+
+    {{-- ============ MODAL POP-UP DETAIL MINIMALIS ============ --}}
+    <div id="modal-detail-kegiatan" class="fixed inset-0 z-50 hidden items-center justify-center px-4 bg-ink-900/40 backdrop-blur-sm transition-opacity">
+        <div class="relative w-full max-w-lg overflow-hidden rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-line sm:p-8">
+            <!-- Tombol Close -->
+            <button onclick="tutupModalDetail()" class="absolute right-4 top-4 rounded-full p-2 text-ink/40 hover:bg-canvas hover:text-ink-900 transition">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
+            <!-- Header Modal -->
+            <div>
+                <span id="modal-status" class="inline-block rounded-full bg-gold/10 px-3 py-1 font-mono text-xs font-semibold text-gold-600"></span>
+                <h3 id="modal-nama" class="mt-3 font-display text-xl font-bold text-ink-900"></h3>
+            </div>
+
+            <!-- Detail Informasi -->
+            <div class="mt-6 space-y-4 divide-y divide-line/60 text-sm">
+                <div class="flex items-center justify-between pt-3">
+                    <span class="text-ink/60">Tanggal Pelaksanaan</span>
+                    <span id="modal-jadwal" class="font-mono font-medium text-ink-900"></span>
+                </div>
+                <div class="flex items-center justify-between pt-3">
+                    <span class="text-ink/60">Waktu Mulai</span>
+                    <span id="modal-waktu" class="font-mono font-medium text-ink-900"></span>
+                </div>
+                <div class="flex items-center justify-between pt-3">
+                    <span class="text-ink/60">Lokasi / Tempat</span>
+                    <span id="modal-lokasi" class="font-medium text-ink-900 text-right"></span>
+                </div>
+                <div class="flex items-center justify-between pt-3">
+                    <span class="text-ink/60">Kapasitas Peserta</span>
+                    <span id="modal-kuota" class="font-medium text-ink-900"></span>
+                </div>
+            </div>
+
+            <!-- Footer Modal -->
+            <div class="mt-8 flex gap-3">
+                <button onclick="tutupModalDetail()" class="w-full rounded-full border border-line bg-white py-3 text-sm font-semibold text-ink-900 transition hover:bg-canvas">
+                    Tutup
+                </button>
+                <a id="modal-btn-daftar" href="/pendaftaran" class="w-full text-center rounded-full bg-ink-900 py-3 text-sm font-semibold text-canvas transition hover:bg-ink-700 shadow-md">
+                    Daftar Bimtek Ini
+                </a>
+            </div>
+        </div>
+    </div>
 </section>
+
+<script>
+    (function () {
+        const track = document.getElementById('carousel-track');
+        if (!track) return;
+
+        function geserSatuKartu(arah) {
+            const kartu = track.querySelector(':scope > div');
+            if (!kartu) return;
+            const jarak = kartu.getBoundingClientRect().width + 20;
+            track.scrollBy({ left: arah * jarak, behavior: 'smooth' });
+        }
+
+        ['carousel-prev', 'carousel-prev-mobile'].forEach(id => {
+            document.getElementById(id)?.addEventListener('click', () => geserSatuKartu(-1));
+        });
+        ['carousel-next', 'carousel-next-mobile'].forEach(id => {
+            document.getElementById(id)?.addEventListener('click', () => geserSatuKartu(1));
+        });
+
+        function updateTombol() {
+            const diAwal = track.scrollLeft <= 4;
+            const diAkhir = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+
+            ['carousel-prev', 'carousel-prev-mobile'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.disabled = diAwal;
+            });
+            ['carousel-next', 'carousel-next-mobile'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.disabled = diAkhir;
+            });
+        }
+
+        track.addEventListener('scroll', updateTombol);
+        updateTombol();
+    })();
+
+    function bukaModalDetail(data) {
+        document.getElementById('modal-nama').innerText = data.nama;
+        document.getElementById('modal-status').innerText = data.status;
+        document.getElementById('modal-jadwal').innerText = data.jadwal;
+        document.getElementById('modal-waktu').innerText = data.waktu + ' WIB';
+        document.getElementById('modal-lokasi').innerText = data.lokasi;
+        document.getElementById('modal-kuota').innerText = data.terisi + ' dari ' + data.kuota + ' Kuota';
+
+        // Sembunyikan tombol daftar jika kegiatan sudah ditutup atau selesai
+        const btnDaftar = document.getElementById('modal-btn-daftar');
+        if (data.status === 'Pendaftaran Ditutup' || data.status === 'Selesai') {
+            btnDaftar.style.display = 'none';
+        } else {
+            btnDaftar.style.display = 'block';
+        }
+        
+        const modal = document.getElementById('modal-detail-kegiatan');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function tutupModalDetail() {
+        const modal = document.getElementById('modal-detail-kegiatan');
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+    }
+
+    window.addEventListener('click', function(e) {
+        const modal = document.getElementById('modal-detail-kegiatan');
+        if (e.target === modal) {
+            tutupModalDetail();
+        }
+    });
+</script>
 
     <div class="relative -mb-px h-8 w-full overflow-hidden sm:h-14" aria-hidden="true">
         <svg viewBox="0 0 1440 60" preserveAspectRatio="none" class="absolute bottom-0 h-full w-full">
@@ -332,12 +449,10 @@
 
         <div class="relative mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
             <p class="text-xs font-semibold uppercase tracking-wider text-gold-600">Kenapa SIMBIMTEK</p>
-            {{-- [DINAMIS] judul kenapa-simbimtek --}}
             <h2 class="mt-2 max-w-xl font-display text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
                 {{ $setting->kenapa_simbimtek_judul }}
             </h2>
 
-            {{-- [DINAMIS] 4 kartu fitur — teks dari admin, icon/warna tetap fixed per posisi --}}
             <div class="mt-10 grid gap-5 sm:mt-12 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
                 @php
                     $iconStyles = [
@@ -460,41 +575,3 @@
     </section>
 
 @endsection
-
-<script>
-    (function () {
-        const track = document.getElementById('carousel-track');
-        if (!track) return;
-
-        function geserSatuKartu(arah) {
-            const kartu = track.querySelector(':scope > div');
-            if (!kartu) return;
-            const jarak = kartu.getBoundingClientRect().width + 20;
-            track.scrollBy({ left: arah * jarak, behavior: 'smooth' });
-        }
-
-        ['carousel-prev', 'carousel-prev-mobile'].forEach(id => {
-            document.getElementById(id)?.addEventListener('click', () => geserSatuKartu(-1));
-        });
-        ['carousel-next', 'carousel-next-mobile'].forEach(id => {
-            document.getElementById(id)?.addEventListener('click', () => geserSatuKartu(1));
-        });
-
-        function updateTombol() {
-            const diAwal = track.scrollLeft <= 4;
-            const diAkhir = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
-
-            ['carousel-prev', 'carousel-prev-mobile'].forEach(id => {
-                const btn = document.getElementById(id);
-                if (btn) btn.disabled = diAwal;
-            });
-            ['carousel-next', 'carousel-next-mobile'].forEach(id => {
-                const btn = document.getElementById(id);
-                if (btn) btn.disabled = diAkhir;
-            });
-        }
-
-        track.addEventListener('scroll', updateTombol);
-        updateTombol();
-    })();
-</script>

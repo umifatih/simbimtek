@@ -7,7 +7,7 @@ use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\CekStatusController;
 use App\Http\Controllers\SertifikatController;
 use App\Http\Controllers\AbsensiController;
-use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminPesertaController;
 use App\Http\Controllers\Admin\AdminKegiatanController;
 use App\Http\Controllers\Admin\AdminDashboardController;

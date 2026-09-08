@@ -6,6 +6,10 @@
     <title>@yield('title', 'SIMBIMTEK') — Sistem Informasi Manajemen Bimtek</title>
     <meta name="description" content="Ikuti bimbingan teknis dari pendaftaran sampai sertifikat, dalam satu sistem.">
 
+    @if ($globalSetting->logo_url)
+        <link rel="icon" type="image/png" href="{{ $globalSetting->logo_url }}">
+    @endif
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -19,13 +23,13 @@
         <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
             <a href="{{ route('beranda') ?? '/' }}" class="flex items-center gap-2.5">
                 @if ($globalSetting->logo_url)
-                    <img src="{{ $globalSetting->logo_url }}" alt="{{ $globalSetting->nama_aplikasi }}" class="h-9 w-9 shrink-0 rounded-lg object-contain bg-white p-1">
+                    <img src="{{ $globalSetting->logo_url }}" alt="{{ $globalSetting->nama_aplikasi }}" class="h-9 w-9 shrink-0 object-contain">
                 @else
                     <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gold font-display text-sm font-bold text-ink-900">
                         {{ strtoupper(substr($globalSetting->nama_aplikasi, 0, 2)) }}
                     </span>
                 @endif
-                <span class="font-display text-lg font-bold tracking-tight text-ink-900">SIMBIMTEK</span>
+                <span class="font-display text-lg font-bold tracking-tight text-ink-900">{{ $globalSetting->nama_aplikasi }}</span>
             </a>
 
             {{-- Link ini mengarah ke section di beranda (bukan halaman terpisah), makanya pakai anchor "/#..." --}}

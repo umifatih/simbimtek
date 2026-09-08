@@ -62,7 +62,8 @@ Route::prefix('admin')->group(function () {
     Route::put('/data-master/{dataMaster}', [DataMasterController::class, 'update'])->name('admin.data-master.update');
     Route::delete('/data-master/{dataMaster}', [DataMasterController::class, 'destroy'])->name('admin.data-master.destroy');
     Route::get('/data-master/template', [DataMasterController::class, 'unduhTemplate'])->name('admin.data-master.template');
-
+    Route::post('/data-master/rapikan', [DataMasterController::class, 'rapikan'])->name('admin.data-master.rapikan');
+    
     Route::get('/kegiatan', [AdminKegiatanController::class, 'index'])->name('admin.kegiatan.index');
     Route::post('/kegiatan', [AdminKegiatanController::class, 'store'])->name('admin.kegiatan.store');
     Route::put('/kegiatan/{kegiatan}', [AdminKegiatanController::class, 'update'])->name('admin.kegiatan.update');

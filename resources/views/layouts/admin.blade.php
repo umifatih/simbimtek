@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin') — SIMBIMTEK</title>
 
+    @if ($globalSetting->logo_url)
+        <link rel="icon" type="image/png" href="{{ $globalSetting->logo_url }}">
+    @endif
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -21,14 +25,14 @@
         <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-40 w-64 -translate-x-full overflow-y-auto bg-ink-900 transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0">
             <div class="flex h-16 items-center gap-2.5 border-b border-white/10 px-5">
                 @if ($globalSetting->logo_url)
-                    <img src="{{ $globalSetting->logo_url }}" alt="{{ $globalSetting->nama_aplikasi }}" class="h-9 w-9 shrink-0 rounded-lg object-contain bg-white p-1">
+                    <img src="{{ $globalSetting->logo_url }}" alt="{{ $globalSetting->nama_aplikasi }}" class="h-9 w-9 shrink-0 object-contain">
                 @else
                     <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gold font-display text-sm font-bold text-ink-900">
                         {{ strtoupper(substr($globalSetting->nama_aplikasi, 0, 2)) }}
                     </span>
                 @endif
                 <div class="leading-tight">
-                    <p class="font-display text-sm font-bold text-canvas">SIMBIMTEK</p>
+                    <p class="font-display text-sm font-bold text-canvas">{{ $globalSetting->nama_aplikasi }}</p>
                     <p class="text-[11px] text-canvas/45">Panel Admin</p>
                 </div>
             </div>

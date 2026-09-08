@@ -9,11 +9,6 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class DataMasterController extends Controller
 {
-    /**
-     * Halaman utama Data Master: form upload + tabel data sekolah.
-     * Butuh composer package "phpoffice/phpspreadsheet" (kalau belum ada:
-     * composer require phpoffice/phpspreadsheet).
-     */
     public function index(Request $request)
     {
         $cari = trim((string) $request->get('cari'));
@@ -30,18 +25,6 @@ class DataMasterController extends Controller
         return view('admin.data-master.index', compact('dataMasterList', 'cari'));
     }
 
-    /**
-     * Import file .xlsx / .xls / .csv berisi data master sekolah.
-     * Header kolom dicari otomatis (tidak harus baris pertama, dan urutan kolom bebas)
-     * supaya cocok dengan file dari Dinas yang biasanya punya judul/baris kosong di atas.
-     *
-     * Kolom yang dikenali (nama header, tidak case-sensitive, boleh beda-beda sedikit):
-     *  - "DATA SEKOLAH"                 -> data_sekolah
-     *  - "UNIT KERJA"                   -> unit_kerja  (wajib, jadi kunci upsert)
-     *  - "KEPALA SEKOLAH" / "NAMA KEPALA SEKOLAH" -> nama_kepsek
-     *  - "NIP KS" / "NIP KEPALA SEKOLAH"          -> nip_kepsek
-     *  - "DESA"                         -> desa
-     */
     public function import(Request $request)
     {
         $request->validate([
@@ -170,7 +153,6 @@ class DataMasterController extends Controller
         return response()->json(['sukses' => true]);
     }
 
-    /** Unduh contoh template CSV untuk diisi/diimpor ulang. */
     public function unduhTemplate()
     {
         $isi = "DATA SEKOLAH,UNIT KERJA,Kepala Sekolah,NIP KS,DESA\n";
@@ -180,5 +162,23 @@ class DataMasterController extends Controller
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="template-data-master.csv"',
         ]);
+    }
+
+    public function rapikan()
+    {
+        $jumlah = 0;
+
+        DataMaster::chunkById(50, function ($daftar) use (&$jumlah) {
+            foreach ($daftar as $item) {
+                // Set ulang atribut yang sama supaya mutator setNamaKepsekAttribute
+                // & setNipKepsekAttribute di model dijalankan lagi.
+                $item->nama_kepsek = $item->nama_kepsek;
+                $item->nip_kepsek = $item->nip_kepsek;
+                $item->save();
+                $jumlah++;
+            }
+        });
+
+        return back()->with('success', "Rapikan data selesai: {$jumlah} baris diperbarui (nama kepala sekolah & NIP KS).");
     }
 }

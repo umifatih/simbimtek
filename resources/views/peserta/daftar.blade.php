@@ -123,11 +123,19 @@
                                 @error('pangkat_golongan') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                             </div>
 
-                            <div class="sm:col-span-2">
-                                <label for="ttl" class="text-sm font-semibold text-ink-900">Tempat dan Tanggal Lahir <span class="text-gold-600">*</span></label>
-                                <input type="text" id="ttl" name="tempat_tanggal_lahir" value="{{ old('tempat_tanggal_lahir') }}" required placeholder="Contoh: Purbalingga, 17 Agustus 1990" class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none transition placeholder:text-ink/35 focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
-                                @error('tempat_tanggal_lahir') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
+                            {{-- ===== PERUBAHAN: TEMPAT DAN TANGGAL LAHIR DIPISAH ===== --}}
+                            <div>
+                                <label for="tempat_lahir" class="text-sm font-semibold text-ink-900">Tempat Lahir <span class="text-gold-600">*</span></label>
+                                <input type="text" id="tempat_lahir" name="tempat_lahir" value="{{ old('tempat_lahir') }}" required placeholder="Contoh: Purbalingga" class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none transition placeholder:text-ink/35 focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                                @error('tempat_lahir') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                             </div>
+
+                            <div>
+                                <label for="tanggal_lahir" class="text-sm font-semibold text-ink-900">Tanggal Lahir <span class="text-gold-600">*</span></label>
+                                <input type="date" id="tanggal_lahir" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}" required class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none transition focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                                @error('tanggal_lahir') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            {{-- ======================================================== --}}
 
                             <div>
                                 <label for="jabatan" class="text-sm font-semibold text-ink-900">Jabatan <span class="text-gold-600">*</span></label>
@@ -166,9 +174,10 @@
                     </div>
 
                     {{-- --- Persetujuan & Submit --- --}}
+                    {{-- Checkbox ini sudah memiliki tag `required` dari HTML, jadi jika tidak dicentang, tombol Submit tidak akan memproses form --}}
                     <div class="rounded-2xl bg-canvas p-5 sm:p-7">
-                        <label class="flex items-start gap-3">
-                            <input type="checkbox" name="setuju" required class="mt-0.5 h-4 w-4 shrink-0 rounded border-line text-ink-900 focus:ring-ink-900/20">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" name="setuju" required class="mt-0.5 h-4 w-4 shrink-0 rounded border-line text-ink-900 focus:ring-ink-900/20 cursor-pointer">
                             <span class="text-sm text-ink/70">
                                 Saya menyatakan data yang saya isi sudah benar dan bersedia mengikuti seluruh rangkaian kegiatan sesuai jadwal.
                             </span>
@@ -186,46 +195,50 @@
                 </form>
 
                 {{-- ===== SIDEBAR ===== --}}
-<aside class="space-y-5 sm:space-y-6 lg:sticky lg:top-24 lg:col-span-4">
-    <div class="rounded-2xl border border-line bg-white p-5 shadow-sm sm:p-6">
-        <p class="font-display text-sm font-semibold text-ink-900">Alur berkas peserta</p>
-        <ol class="mt-5 space-y-0">
-            @php
-                $tahapan = [
-                    ['label' => 'Daftar Online', 'desc' => 'Sedang kamu isi sekarang'],
-                    ['label' => 'Terbit SPPD', 'desc' => 'Surat tugas siap dicetak'],
-                    ['label' => 'Sertifikat', 'desc' => 'Diunduh usai kegiatan'],
-                ];
-            @endphp
-            @foreach ($tahapan as $i => $t)
-                <li class="relative flex gap-4 pb-6 last:pb-0 sm:pb-7">
-                    @if (!$loop->last)
-                        <span class="absolute left-[15px] top-8 h-full w-px border-l-2 border-dashed border-line"></span>
-                    @endif
-                    <span @class([
-                        'relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-mono text-xs font-semibold',
-                        'bg-ink-900 text-canvas' => $loop->first,
-                        'border-2 border-ink-900/30 bg-canvas text-ink-900' => !$loop->first,
-                    ])>
-                        {{ $i + 1 }}
-                    </span>
-                    <div class="pt-0.5">
-                        <p class="text-sm font-semibold text-ink-900">{{ $t['label'] }}</p>
-                        <p class="text-xs text-ink/55">{{ $t['desc'] }}</p>
+                <aside class="space-y-5 sm:space-y-6 lg:sticky lg:top-24 lg:col-span-4">
+                    <div class="rounded-2xl border border-line bg-white p-5 shadow-sm sm:p-6">
+                        <p class="font-display text-sm font-semibold text-ink-900">Alur berkas peserta</p>
+                        <ol class="mt-5 space-y-0">
+                            @php
+                                $tahapan = [
+                                    ['label' => 'Daftar Online', 'desc' => 'Sedang kamu isi sekarang'],
+                                    ['label' => 'Terbit SPPD', 'desc' => 'Surat tugas siap dicetak'],
+                                    ['label' => 'Sertifikat', 'desc' => 'Diunduh usai kegiatan'],
+                                ];
+                            @endphp
+                            @foreach ($tahapan as $i => $t)
+                                <li class="relative flex gap-4 pb-6 last:pb-0 sm:pb-7">
+                                    @if (!$loop->last)
+                                        <span class="absolute left-[15px] top-8 h-full w-px border-l-2 border-dashed border-line"></span>
+                                    @endif
+                                    <span @class([
+                                        'relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-mono text-xs font-semibold',
+                                        'bg-ink-900 text-canvas' => $loop->first,
+                                        'border-2 border-ink-900/30 bg-canvas text-ink-900' => !$loop->first,
+                                    ])>
+                                        {{ $i + 1 }}
+                                    </span>
+                                    <div class="pt-0.5">
+                                        <p class="text-sm font-semibold text-ink-900">{{ $t['label'] }}</p>
+                                        <p class="text-xs text-ink/55">{{ $t['desc'] }}</p>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ol>
                     </div>
-                </li>
-            @endforeach
-        </ol>
-    </div>
 
-    <div class="rounded-2xl border border-gold/25 bg-gold/[0.05] p-5 sm:p-6">
-        <p class="font-display text-sm font-semibold text-ink-900">Butuh bantuan?</p>
-        <p class="mt-2 text-sm leading-relaxed text-ink/65">
-            Kalau ada kendala saat mengisi formulir, hubungi panitia bimtek pada jam kerja.
-        </p>
-        <p class="mt-3 font-mono text-sm font-semibold text-ink-900">0281-XXX-XXX</p>
-    </div>
-</aside>
+                    <div class="rounded-2xl border border-gold/25 bg-gold/[0.05] p-5 sm:p-6">
+                        <p class="font-display text-sm font-semibold text-ink-900">Butuh bantuan?</p>
+                        <p class="mt-2 text-sm leading-relaxed text-ink/65">
+                            Kalau ada kendala saat mengisi formulir, hubungi panitia bimtek pada jam kerja.
+                        </p>
+                        <p class="mt-3 font-mono text-sm font-semibold text-ink-900">0281-XXX-XXX</p>
+                    </div>
+                </aside>
+
+            </div>
+        </div>
+    </section>
 
     <script>
         const kegiatanSelect = document.getElementById('kegiatan-select');
@@ -258,7 +271,7 @@
             unit_kerja: document.getElementById('unit_kerja'),
             nama_gelar: document.getElementById('nama_gelar'),
             pangkat_golongan: document.getElementById('pangkat_golongan'),
-            tempat_tanggal_lahir: document.getElementById('ttl'),
+            // Kita keluarkan TTL dari logic autofill sementara
             jabatan: document.getElementById('jabatan'),
             email: document.getElementById('email'),
             nama_gelar_kepsek: document.getElementById('nama_gelar_kepsek'),
@@ -287,9 +300,17 @@
                     }
                 });
 
+                // Memecah "Tempat, Tanggal Lahir" dari database sebelumnya jadi dua kolom
+                if (hasil.data.tempat_tanggal_lahir) {
+                    const ttlSplit = hasil.data.tempat_tanggal_lahir.split(', ');
+                    if (ttlSplit.length > 0) {
+                        document.getElementById('tempat_lahir').value = ttlSplit[0]; // Isi nama kota/tempat
+                    }
+                }
+
                 tampilkanStatusNip('✓ Data ditemukan dari pendaftaran sebelumnya, otomatis diisi. Silakan periksa kembali.', 'text-success');
             } catch (e) {
-                // gagal cek (mis. offline) — biarkan peserta isi manual, jangan blokir alur
+                // gagal cek
             }
         }
 
@@ -298,12 +319,12 @@
             nipStatus.classList.add('hidden');
 
             const nip = nipInput.value.trim();
-            if (nip.length < 8) return; // terlalu pendek, belum layak dicek
+            if (nip.length < 8) return;
 
-            timerNip = setTimeout(() => cariDataNip(nip), 600); // debounce 600ms
+            timerNip = setTimeout(() => cariDataNip(nip), 600);
         });
 
-        // Unit Kerja: paksa huruf kapital pada nilai yang benar-benar dikirim, bukan cuma tampilan
+        // Unit Kerja: paksa huruf kapital pada nilai yang benar-benar dikirim
         const unitKerjaInput = document.getElementById('unit_kerja');
         unitKerjaInput?.addEventListener('input', (e) => {
             const pos = e.target.selectionStart;

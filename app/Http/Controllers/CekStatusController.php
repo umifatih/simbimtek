@@ -19,6 +19,6 @@ class CekStatusController extends Controller
                 ->first();
         }
 
-        return view('status.index', compact('pendaftaran', 'dicari'));
+        return view('peserta.status', compact('pendaftaran', 'dicari'));
     }
 }

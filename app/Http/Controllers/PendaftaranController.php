@@ -7,16 +7,11 @@ use App\Models\Peserta;
 use App\Models\Pendaftaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Barryvdh\DomPDF\Facade\Pdf;
 use PhpOffice\PhpWord\Element\TextRun;
 use PhpOffice\PhpWord\TemplateProcessor;
 
 class PendaftaranController extends Controller
 {
-    /**
-     * Tampilkan form pendaftaran, kirim daftar kegiatan yang statusnya 'dibuka'.
-     * kuota_terisi dihitung otomatis dari jumlah pendaftaran yang sudah masuk.
-     */
     public function create()
     {
         $kegiatanList = Kegiatan::withCount(['pendaftaran as kuota_terisi'])
@@ -24,14 +19,9 @@ class PendaftaranController extends Controller
             ->orderBy('tanggal_mulai')
             ->get();
 
-        return view('daftar.index', compact('kegiatanList'));
+        return view('peserta.daftar', compact('kegiatanList'));
     }
 
-    /**
-     * AJAX: dipanggil dari form pendaftaran begitu peserta selesai mengetik NIP.
-     * Kalau NIP sudah pernah dipakai daftar sebelumnya, kembalikan data dirinya
-     * supaya form bisa diisi otomatis di sisi klien.
-     */
     public function cariNip(string $nip)
     {
         $peserta = Peserta::where('nip', $nip)->first();
@@ -43,14 +33,15 @@ class PendaftaranController extends Controller
         return response()->json([
             'ditemukan' => true,
             'data' => [
-                'unit_kerja'           => $peserta->unit_kerja,
-                'nama_gelar'           => $peserta->nama_gelar,
-                'pangkat_golongan'     => $peserta->pangkat_golongan,
-                'tempat_tanggal_lahir' => $peserta->tempat_tanggal_lahir,
-                'jabatan'              => $peserta->jabatan,
-                'email'                => $peserta->email,
-                'nama_gelar_kepsek'    => $peserta->nama_gelar_kepsek,
-                'nip_kepsek'           => $peserta->nip_kepsek,
+                'unit_kerja'        => $peserta->unit_kerja,
+                'nama_gelar'        => $peserta->nama_gelar,
+                'pangkat_golongan'  => $peserta->pangkat_golongan,
+                'tempat_lahir'      => $peserta->tempat_lahir,
+                'tanggal_lahir'     => optional($peserta->tanggal_lahir)->toDateString(),
+                'jabatan'           => $peserta->jabatan,
+                'email'             => $peserta->email,
+                'nama_gelar_kepsek' => $peserta->nama_gelar_kepsek,
+                'nip_kepsek'        => $peserta->nip_kepsek,
             ],
         ]);
     }
@@ -63,7 +54,8 @@ class PendaftaranController extends Controller
             'nama_gelar'           => 'required|string|max:255',
             'nip'                  => 'required|string|max:30',
             'pangkat_golongan'     => 'required|string|max:100',
-            'tempat_tanggal_lahir' => 'required|string|max:100',
+            'tempat_lahir'         => 'required|string|max:100',
+            'tanggal_lahir'        => 'required|date',
             'jabatan'              => 'required|in:Bendahara BOSP,Operator BOSP',
             'email'                => 'required|email|max:255',
             'nama_gelar_kepsek'    => 'required|string|max:255',
@@ -77,7 +69,8 @@ class PendaftaranController extends Controller
                 'nama_gelar'           => $validated['nama_gelar'],
                 'unit_kerja'           => $validated['unit_kerja'],
                 'pangkat_golongan'     => $validated['pangkat_golongan'],
-                'tempat_tanggal_lahir' => $validated['tempat_tanggal_lahir'],
+                'tempat_lahir'         => $validated['tempat_lahir'],
+                'tanggal_lahir'        => $validated['tanggal_lahir'],
                 'jabatan'              => $validated['jabatan'],
                 'email'                => $validated['email'],
                 'nama_gelar_kepsek'    => $validated['nama_gelar_kepsek'],
@@ -104,9 +97,8 @@ class PendaftaranController extends Controller
             'status' => 'daftar',
         ]);
 
-        $pendaftaran->load(['peserta', 'kegiatan']);
-
-        return view('daftar.sukses', compact('pendaftaran'));
+        return redirect()->route('cek-status', ['nomor_pendaftaran' => $pendaftaran->nomor_pendaftaran])
+                         ->with('success', true);
     }
 
     public function unduh(Pendaftaran $pendaftaran, string $jenis)
@@ -114,17 +106,8 @@ class PendaftaranController extends Controller
         $pendaftaran->load(['peserta', 'kegiatan']);
         $kegiatan = $pendaftaran->kegiatan;
 
-        // ===== Bukti Pendaftaran: langsung dirender jadi PDF dari Blade, tanpa docx =====
-        if ($jenis === 'bukti') {
-            $pdf = Pdf::loadView('dokumen.bukti-pendaftaran', compact('pendaftaran'))
-                ->setPaper('a4', 'portrait');
-
-            $namaFile = 'bukti-pendaftaran-' . Str::slug($pendaftaran->nama_gelar) . '.pdf';
-
-            return $pdf->download($namaFile);
-        }
-
         $templateMap = [
+            'bukti'       => storage_path('app/templates/pendaftar.docx'),
             'surat-tugas' => storage_path('app/templates/surat-tugas.docx'),
             'sppd'        => storage_path('app/templates/sppd.docx'),
             'sertifikat'  => storage_path('app/templates/sertifikat.docx'),
@@ -132,7 +115,6 @@ class PendaftaranController extends Controller
 
         abort_unless(isset($templateMap[$jenis]), 404);
 
-        // Sertifikat cuma boleh diunduh kalau absensi sudah lengkap
         if ($jenis === 'sertifikat') {
             abort_unless(
                 $pendaftaran->status === 'sertifikat',
@@ -143,15 +125,12 @@ class PendaftaranController extends Controller
 
         $template = new TemplateProcessor($templateMap[$jenis]);
 
-        // Unit kerja versi KOP SURAT: bold + ukuran 13, dipakai HANYA sekali di header
         $unitKerjaKop = new TextRun();
         $unitKerjaKop->addText(strtoupper($pendaftaran->unit_kerja), ['bold' => true, 'size' => 13]);
         $template->setComplexValue('unit_kerja_kop', $unitKerjaKop);
 
-        // Unit kerja versi BADAN SURAT: teks polos, muncul berkali-kali (setValue otomatis ganti semua)
         $template->setValue('unit_kerja', strtoupper($pendaftaran->unit_kerja));
 
-        // Data peserta
         $template->setValue('nomor_pendaftaran', $pendaftaran->nomor_pendaftaran);
         $template->setValue('nama', $pendaftaran->nama_gelar);
         $template->setValue('nip', $pendaftaran->nip);
@@ -159,7 +138,6 @@ class PendaftaranController extends Controller
         $template->setValue('nama_ks', $pendaftaran->nama_gelar_kepsek);
         $template->setValue('nip_ks', $pendaftaran->nip_kepsek ?? '-');
 
-        // Data kegiatan
         $template->setValue('nama_kegiatan', $kegiatan->nama);
         $template->setValue('hari_tanggal', $kegiatan->hari_tanggal);
         $template->setValue('waktu', substr($kegiatan->waktu, 0, 5));
@@ -206,11 +184,10 @@ class PendaftaranController extends Controller
         $periode = \Carbon\CarbonPeriod::create($mulai, $selesai);
         $jumlahHari = $mulai->diffInDays($selesai) + 1;
 
-        // Clone baris "hari" sebanyak jumlah hari kegiatan
         $template->cloneRow('lokasi_hari', $jumlahHari);
 
         foreach ($periode as $index => $tanggal) {
-            $ke = $index + 1; // PHPWord mulai indeks clone dari 1
+            $ke = $index + 1;
 
             $template->setValue("romawi_hari#{$ke}", $this->angkaRomawi($index + 2));
             $template->setValue("lokasi_hari#{$ke}", $kegiatan->lokasi);
@@ -219,7 +196,6 @@ class PendaftaranController extends Controller
             $template->setValue("panitia_nip_hari#{$ke}", $kegiatan->nip_panitia ?? '-');
         }
 
-        // Baris terakhir (tiba kembali di sekolah asal)
         $template->setValue('romawi_akhir', $this->angkaRomawi($jumlahHari + 2));
         $template->setValue('tanggal_akhir', $selesai->translatedFormat('d F Y'));
     }

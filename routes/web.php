@@ -19,8 +19,9 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 */
 
 Route::get('/', [BerandaController::class, 'index'])->name('beranda');
-Route::get('/cara-kerja', fn () => view('cara-kerja'))->name('cara-kerja');
-Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal');
+
+// [UPDATE] Penyesuaian pemanggilan view di dalam folder peserta
+Route::get('/cara-kerja', fn () => view('peserta.cara-kerja'))->name('cara-kerja');
 
 Route::get('/pendaftaran', [PendaftaranController::class, 'create'])->name('pendaftaran.create');
 Route::post('/pendaftaran', [PendaftaranController::class, 'store'])->name('pendaftaran.store');
@@ -57,7 +58,8 @@ Route::prefix('admin')->group(function () {
 
     Route::get('/peserta', [AdminPesertaController::class, 'index'])->name('admin.peserta.index');
 
-    Route::get('/absensi', fn () => view('admin.absensi.scan'))->name('absensi.scan.page');
+    Route::get('/absensi', [AbsensiController::class, 'indexScan'])->name('admin.absensi.scan');
+    Route::get('/absensi/{kegiatan}/riwayat', [AbsensiController::class, 'riwayat'])->name('absensi.riwayat');
     Route::post('/absensi/scan', [AbsensiController::class, 'scan'])->name('absensi.scan');
 
     Route::get('/cetak', fn () => view('admin.cetak.index'))->name('admin.cetak.index');

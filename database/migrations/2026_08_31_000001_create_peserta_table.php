@@ -14,7 +14,11 @@ return new class extends Migration
             $table->string('nama_gelar');
             $table->string('unit_kerja');
             $table->string('pangkat_golongan');
-            $table->string('tempat_tanggal_lahir');
+            
+            // [UPDATE] Dipisah menjadi tempat_lahir dan tanggal_lahir
+            $table->string('tempat_lahir');
+            $table->date('tanggal_lahir');
+            
             $table->string('jabatan'); 
             $table->string('email');
             $table->string('nama_gelar_kepsek');

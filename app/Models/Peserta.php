@@ -13,16 +13,21 @@ class Peserta extends Model
     protected $table = 'peserta';
 
     protected $fillable = [
-        'nip',
-        'nama_gelar',
-        'unit_kerja',
-        'pangkat_golongan',
-        'tempat_tanggal_lahir',
-        'jabatan',
-        'email',
-        'nama_gelar_kepsek',
-        'nip_kepsek',
-    ];
+    'nip',
+    'nama_gelar',
+    'unit_kerja',
+    'pangkat_golongan',
+    'tempat_lahir',   
+    'tanggal_lahir',   
+    'jabatan',
+    'email',
+    'nama_gelar_kepsek',
+    'nip_kepsek',
+];
+
+protected $casts = [
+    'tanggal_lahir' => 'date',
+];
 
     public function pendaftaran(): HasMany
     {

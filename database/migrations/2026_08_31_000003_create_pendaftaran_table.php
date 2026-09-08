@@ -15,7 +15,9 @@ return new class extends Migration
             $table->string('nomor_pendaftaran')->unique();
             $table->string('token_kehadiran', 32)->unique(); 
             $table->enum('status', ['daftar', 'sppd', 'sertifikat'])->default('daftar');
-            $table->timestamp('hadir_pada')->nullable(); 
+            
+            // NOTE: $table->timestamp('hadir_pada') dihapus sesuai permintaan
+            
             $table->timestamps();
             $table->unique(['peserta_id', 'kegiatan_id']);
         });

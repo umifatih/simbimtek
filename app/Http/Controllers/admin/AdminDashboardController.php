@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Absensi;
 use App\Models\Kegiatan;
 use App\Models\Pendaftaran;
 
@@ -13,7 +14,9 @@ class AdminDashboardController extends Controller
         $totalPeserta = Pendaftaran::count();
         $menungguVerifikasi = Pendaftaran::where('status', 'daftar')->count();
         $kegiatanAktif = Kegiatan::where('status', 'dibuka')->count();
-        $hadirHariIni = Pendaftaran::whereDate('hadir_pada', today())->count();
+
+        // Jumlah peserta yang sudah absen HARI INI (lintas semua kegiatan yang berjalan)
+        $hadirHariIni = Absensi::whereDate('tanggal_hadir', now())->count();
 
         $kegiatanBerjalan = Kegiatan::withCount(['pendaftaran as jumlah_peserta'])
             ->where('status', 'dibuka')
@@ -33,7 +36,7 @@ class AdminDashboardController extends Controller
             'kegiatanAktif',
             'hadirHariIni',
             'kegiatanBerjalan',
-            'antreanVerifikasi'
+            'antreanVerifikasi',
         ));
     }
 }

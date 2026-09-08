@@ -10,41 +10,54 @@ use Illuminate\Http\Request;
 
 class AbsensiController extends Controller
 {
-    /**
-     * Menampilkan halaman scan QR untuk sebuah kegiatan.
-     * Meng-generate rentang tanggal (jadwal harian) secara dinamis
-     * untuk dikirim ke dropdown di halaman view.
-     */
-    public function indexScan($id_kegiatan)
-    {
-        $kegiatan = Kegiatan::findOrFail($id_kegiatan);
-        
-        $jadwal_harian = [];
-        
-        // Memecah rentang tanggal kegiatan menjadi list per hari menggunakan CarbonPeriod
-        if ($kegiatan->tanggal_mulai && $kegiatan->tanggal_selesai) {
-            $periode = CarbonPeriod::create($kegiatan->tanggal_mulai, $kegiatan->tanggal_selesai);
-            $hariKe = 1;
-            foreach ($periode as $tanggal) {
-                // Contoh Hasil: "Hari ke-1 (12 Sep 2026)"
-                $jadwal_harian[$tanggal->toDateString()] = "Hari ke-{$hariKe} (" . $tanggal->translatedFormat('d M Y') . ")";
-                $hariKe++;
-            }
-        } else {
-            // Fallback jika tanggal kosong
-            $jadwal_harian[now()->toDateString()] = 'Hari Ini (' . now()->translatedFormat('d M Y') . ')';
-        }
+    public function indexScan()
+{
+    $kegiatan = Kegiatan::where('status', 'dibuka')
+        ->whereDate('tanggal_mulai', '<=', now())
+        ->whereDate('tanggal_selesai', '>=', now())
+        ->orderBy('tanggal_mulai')
+        ->first();
 
-        return view('admin.absensi.scan', compact('kegiatan', 'jadwal_harian'));
+    if (! $kegiatan) {
+        $kegiatan = Kegiatan::where('status', 'dibuka')
+            ->orderBy('tanggal_mulai')
+            ->first();
     }
 
-    /**
-     * Dipanggil via AJAX saat QR peserta dipindai panitia.
-     * Mencatat kehadiran untuk tanggal yang DIPILIH admin di layar.
-     */
+    $jadwal_harian = [];
+
+    if ($kegiatan) {
+        $periode = CarbonPeriod::create($kegiatan->tanggal_mulai, $kegiatan->tanggal_selesai);
+        $hariKe = 1;
+        foreach ($periode as $tanggal) {
+            $jadwal_harian[$tanggal->toDateString()] = "Hari ke-{$hariKe} (" . $tanggal->translatedFormat('d M Y') . ")";
+            $hariKe++;
+        }
+    }
+
+    return view('admin.absensi.scan', compact('kegiatan', 'jadwal_harian'));
+}
+
+    public function riwayat(Request $request, Kegiatan $kegiatan)
+    {
+        $tanggal = $request->query('tanggal', now()->toDateString());
+
+        $data = Absensi::with('pendaftaran')
+            ->whereHas('pendaftaran', fn ($q) => $q->where('kegiatan_id', $kegiatan->id))
+            ->where('tanggal_hadir', $tanggal)
+            ->orderByDesc('waktu_scan')
+            ->get()
+            ->map(fn ($a) => [
+                'nama'       => $a->pendaftaran->nama_gelar,
+                'unit_kerja' => $a->pendaftaran->unit_kerja,
+                'jam'        => $a->waktu_scan->format('H:i'),
+            ]);
+
+        return response()->json($data);
+    }
+
     public function scan(Request $request)
     {
-        // 1. Validasi request dari Javascript (sekarang menerima 'kode' dan 'tanggal')
         $validated = $request->validate([
             'kode'    => 'required|string',
             'tanggal' => 'required|date',
@@ -54,7 +67,6 @@ class AbsensiController extends Controller
             ->where('token_kehadiran', $validated['kode'])
             ->first();
 
-        // 2. Jika QR tidak terdaftar
         if (! $pendaftaran) {
             return response()->json([
                 'status' => 'gagal',
@@ -65,7 +77,6 @@ class AbsensiController extends Controller
         $kegiatan = $pendaftaran->kegiatan;
         $tanggalDipilih = $validated['tanggal'];
 
-        // 3. Pastikan tanggal yang dipilih admin masih masuk rentang kegiatan
         if ($tanggalDipilih < $kegiatan->tanggal_mulai->toDateString() || $tanggalDipilih > $kegiatan->tanggal_selesai->toDateString()) {
             return response()->json([
                 'status' => 'gagal',
@@ -73,7 +84,6 @@ class AbsensiController extends Controller
             ]);
         }
 
-        // 4. Cegah Duplikat: Cek apakah peserta sudah diabsen untuk HARI INI
         $sudahAbsen = Absensi::where('pendaftaran_id', $pendaftaran->id)
             ->where('tanggal_hadir', $tanggalDipilih)
             ->exists();
@@ -86,25 +96,23 @@ class AbsensiController extends Controller
             ]);
         }
 
-        // 5. Catat Absensi ke Database (Karena sudah lolos semua validasi)
-        $absensi = Absensi::create([
+        Absensi::create([
             'pendaftaran_id' => $pendaftaran->id,
             'tanggal_hadir'  => $tanggalDipilih,
-            'waktu_scan'     => now(), // Tetap simpan jam saat dia scan (real-time)
+            'waktu_scan'     => now(),
         ]);
 
-        // 6. Cek Kelengkapan (Otomatis naikkan status jadi 'sertifikat' jika sudah lengkap)
         $sudahLengkap = $pendaftaran->absensiLengkap();
         if ($sudahLengkap && $pendaftaran->status !== 'sertifikat') {
             $pendaftaran->update(['status' => 'sertifikat']);
         }
 
-        // 7. Kembalikan respons sukses ke Javascript
         return response()->json([
             'status'     => 'berhasil',
             'nama'       => $pendaftaran->nama_gelar,
             'unit_kerja' => $pendaftaran->unit_kerja,
             'kegiatan'   => $kegiatan->nama,
+            'jam'        => now()->format('H:i'),
         ]);
     }
 }

@@ -19,6 +19,6 @@ class SertifikatController extends Controller
                 ->first();
         }
 
-        return view('sertifikat.index', compact('pendaftaran', 'dicari'));
+        return view('peserta.sertif', compact('pendaftaran', 'dicari'));
     }
 }

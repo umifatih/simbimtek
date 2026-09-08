@@ -18,7 +18,13 @@
     <header class="sticky top-0 z-50 border-b border-line/70 bg-canvas/90 backdrop-blur">
         <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
             <a href="{{ route('beranda') ?? '/' }}" class="flex items-center gap-2.5">
-                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-ink-900 font-display text-sm font-bold text-canvas">SB</span>
+                @if ($globalSetting->logo_url)
+                    <img src="{{ $globalSetting->logo_url }}" alt="{{ $globalSetting->nama_aplikasi }}" class="h-9 w-9 shrink-0 rounded-lg object-contain bg-white p-1">
+                @else
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gold font-display text-sm font-bold text-ink-900">
+                        {{ strtoupper(substr($globalSetting->nama_aplikasi, 0, 2)) }}
+                    </span>
+                @endif
                 <span class="font-display text-lg font-bold tracking-tight text-ink-900">SIMBIMTEK</span>
             </a>
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kegiatan;
+use App\Models\SiteSetting;
 
 class BerandaController extends Controller
 {
@@ -13,7 +14,8 @@ class BerandaController extends Controller
             ->sortBy(fn ($k) => ($k->status === 'selesai' ? '1' : '0') . '-' . $k->tanggal_mulai->format('Ymd'))
             ->values();
 
-        // [UPDATE] Tambahkan 'peserta.' karena view sekarang ada di resources/views/peserta/
-        return view('peserta.beranda', compact('kegiatanList'));
+        $setting = SiteSetting::current();
+
+        return view('peserta.beranda', compact('kegiatanList', 'setting'));
     }
 }

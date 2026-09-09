@@ -10,6 +10,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use PhpOffice\PhpWord\Element\TextRun;
 use PhpOffice\PhpWord\TemplateProcessor;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
 
 class PendaftaranController extends Controller
 {
@@ -208,6 +212,7 @@ class PendaftaranController extends Controller
         $template->setValue('jabatan', $pendaftaran->jabatan);
         $template->setValue('nama_ks', $pendaftaran->nama_gelar_kepsek);
         $template->setValue('nip_ks', $pendaftaran->nip_kepsek ?? '-');
+        $template->setValue('email', $pendaftaran->email ?? '-');
 
         $template->setValue('nama_kegiatan', $kegiatan->nama);
         $template->setValue('hari_tanggal', $kegiatan->hari_tanggal);
@@ -222,6 +227,39 @@ class PendaftaranController extends Controller
         $template->setValue('nip_panitia', $kegiatan->nip_panitia ?? '-');
         $template->setValue('tanggal_mulai', $kegiatan->tanggal_mulai->translatedFormat('d F Y'));
         $template->setValue('tanggal_ttd', $kegiatan->tanggal_mulai->translatedFormat('d F Y'));
+
+        // ===== Generate & embed QR kehadiran =====
+        $qrPath = null;
+
+        if (in_array($jenis, ['bukti', 'surat-tugas'])) {
+            $folderQr = storage_path('app/tmp');
+            if (! is_dir($folderQr)) {
+                mkdir($folderQr, 0755, true);
+            }
+
+            $qrPath = $folderQr . '/qr_' . $pendaftaran->id . '.png';
+
+            // [PERBAIKAN] Menggunakan konstruktor baru Endroid v4/v5 tanpa memanggil setSize()
+            $qrCode = new QrCode(
+                data: $pendaftaran->token_kehadiran,
+                encoding: new Encoding('UTF-8'),
+                errorCorrectionLevel: ErrorCorrectionLevel::Low,
+                size: 300,
+                margin: 10
+            );
+
+            $writer = new PngWriter();
+            $result = $writer->write($qrCode);
+            $result->saveToFile($qrPath);
+
+            $template->setImageValue('qr_code', [
+                'path'   => $qrPath,
+                'width'  => 200,
+                'height' => 200,
+                'ratio'  => false,
+            ]);
+        }
+        // ==========================================
 
         if ($jenis === 'sppd') {
             $this->isiRincianPerjalanan($template, $kegiatan, $pendaftaran);
@@ -243,6 +281,10 @@ class PendaftaranController extends Controller
 
         if (in_array($jenis, ['surat-tugas', 'sppd']) && $pendaftaran->status === 'daftar') {
             $pendaftaran->update(['status' => 'sppd']);
+        }
+
+        if ($qrPath && file_exists($qrPath)) {
+            @unlink($qrPath);
         }
 
         return response()->download($pathSementara, $namaFile)->deleteFileAfterSend(true);

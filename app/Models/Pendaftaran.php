@@ -42,7 +42,7 @@ class Pendaftaran extends Model
         return $this->hasMany(Absensi::class);
     }
 
- 
+
     public function absensiLengkap(): bool
     {
         if (! $this->kegiatan?->tanggal_mulai || ! $this->kegiatan?->tanggal_selesai) {
@@ -109,5 +109,10 @@ class Pendaftaran extends Model
     public function getNipKepsekAttribute()
     {
         return $this->peserta?->nip_kepsek;
+    }
+
+    public function getEmailAttribute()
+    {
+        return $this->peserta?->email;
     }
 }

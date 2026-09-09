@@ -37,6 +37,7 @@
     <div class="mt-5 space-y-3 sm:hidden">
         @forelse ($peserta as $p)
             <div onclick="showDetail({
+                noDaftar: '{{ addslashes($p->nomor_pendaftaran ?? '#' . $p->id) }}',
                 nama: '{{ addslashes($p->nama_gelar) }}',
                 nip: '{{ addslashes($p->peserta->nip ?? '-') }}',
                 unit: '{{ addslashes($p->unit_kerja) }}',
@@ -77,6 +78,7 @@
             <tbody class="divide-y divide-line">
                 @forelse ($peserta as $p)
                     <tr onclick="showDetail({
+                        noDaftar: '{{ addslashes($p->nomor_pendaftaran ?? '#' . $p->id) }}',
                         nama: '{{ addslashes($p->nama_gelar) }}',
                         nip: '{{ addslashes($p->peserta->nip ?? '-') }}',
                         unit: '{{ addslashes($p->unit_kerja) }}',
@@ -128,6 +130,10 @@
             {{-- Detail Content --}}
             <div class="mt-5 space-y-3.5 text-sm">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 border-b border-line/40 pb-3">
+                    <span class="text-xs font-medium text-ink/50">Nomor Pendaftaran</span>
+                    <span class="font-semibold text-ink-900 font-mono text-xs sm:text-right" id="modal-no-daftar">-</span>
+                </div>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 border-b border-line/40 pb-3">
                     <span class="text-xs font-medium text-ink/50">Nama & Gelar</span>
                     <span class="font-semibold text-ink-900 text-right" id="modal-nama">-</span>
                 </div>
@@ -169,6 +175,7 @@
     {{-- Script JavaScript Murni untuk Kontrol Modal --}}
     <script>
         function showDetail(data) {
+            document.getElementById('modal-no-daftar').innerText = data.noDaftar;
             document.getElementById('modal-nama').innerText = data.nama;
             document.getElementById('modal-nip').innerText = data.nip;
             document.getElementById('modal-unit').innerText = data.unit;

@@ -74,41 +74,46 @@
     </main>
 
     {{-- ============ FOOTER ============ --}}
-    <footer class="border-t border-line bg-ink-900 text-canvas/80">
-        <div class="mx-auto max-w-7xl px-6 py-14 lg:px-8">
-            <div class="grid gap-10 md:grid-cols-4">
-                <div class="md:col-span-2">
-                    <div class="flex items-center gap-2.5">
-                        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-gold font-display text-sm font-bold text-ink-900">SB</span>
-                        <span class="font-display text-lg font-bold text-canvas">SIMBIMTEK</span>
-                    </div>
-                    <p class="mt-4 max-w-sm text-sm leading-relaxed text-canvas/60">
-                        Sistem Informasi Manajemen Bimbingan Teknis — mengelola pendaftaran, verifikasi,
-                        SPPD, dan sertifikat peserta dalam satu alur yang jelas.
-                    </p>
+<footer class="border-t border-line bg-ink-900 text-canvas/80">
+    <div class="mx-auto max-w-7xl px-6 py-14 lg:px-8">
+        <div class="grid gap-10 md:grid-cols-4">
+            <div class="md:col-span-2">
+                <div class="flex items-center gap-2.5">
+                    @if ($globalSetting->logo_url)
+                        <img src="{{ $globalSetting->logo_url }}" alt="{{ $globalSetting->nama_aplikasi }}" class="h-9 w-9 shrink-0 object-contain">
+                    @else
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gold font-display text-sm font-bold text-ink-900">
+                            {{ strtoupper(substr($globalSetting->nama_aplikasi, 0, 2)) }}
+                        </span>
+                    @endif
+                    <span class="font-display text-lg font-bold text-canvas">{{ $globalSetting->nama_aplikasi }}</span>
                 </div>
-                <div>
-                    <p class="font-display text-sm font-semibold text-canvas">Untuk Peserta</p>
-                    <ul class="mt-4 space-y-2.5 text-sm text-canvas/60">
-                        <li><a href="/#informasi-kegiatan" class="transition hover:text-canvas">Informasi Kegiatan</a></li>
-                        <li><a href="/#kegiatan" class="transition hover:text-canvas">Jadwal Bimtek</a></li>
-                        <li><a href="/pendaftaran" class="transition hover:text-canvas">Pendaftaran Online</a></li>
-                        <li><a href="/cek-status" class="transition hover:text-canvas">Cek Status</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <p class="font-display text-sm font-semibold text-canvas">Bantuan</p>
-                    <ul class="mt-4 space-y-2.5 text-sm text-canvas/60">
-                        <li><a href="/cara-kerja" class="transition hover:text-canvas">Alur Pendaftaran</a></li>
-                    </ul>
-                </div>
+                <p class="mt-4 max-w-sm text-sm leading-relaxed text-canvas/60">
+                    {{ $globalSetting->deskripsi }}
+                </p>
             </div>
-            <div class="mt-12 flex flex-col gap-2 border-t border-canvas/10 pt-6 text-xs text-canvas/40 sm:flex-row sm:items-center sm:justify-between">
-                <p>&copy; {{ date('Y') }} SIMBIMTEK. Seluruh hak cipta dilindungi.</p>
-                <p>Dibangun dengan Laravel &amp; Tailwind CSS.</p>
+            <div>
+                <p class="font-display text-sm font-semibold text-canvas">Untuk Peserta</p>
+                <ul class="mt-4 space-y-2.5 text-sm text-canvas/60">
+                    <li><a href="/#informasi-kegiatan" class="transition hover:text-canvas">Informasi Kegiatan</a></li>
+                    <li><a href="/#kegiatan" class="transition hover:text-canvas">Jadwal Bimtek</a></li>
+                    <li><a href="/pendaftaran" class="transition hover:text-canvas">Pendaftaran Online</a></li>
+                    <li><a href="/cek-status" class="transition hover:text-canvas">Cek Status</a></li>
+                </ul>
+            </div>
+            <div>
+                <p class="font-display text-sm font-semibold text-canvas">Bantuan</p>
+                <ul class="mt-4 space-y-2.5 text-sm text-canvas/60">
+                    <li><a href="/cara-kerja" class="transition hover:text-canvas">Alur Pendaftaran</a></li>
+                </ul>
             </div>
         </div>
-    </footer>
+        <div class="mt-12 flex flex-col gap-2 border-t border-canvas/10 pt-6 text-xs text-canvas/40 sm:flex-row sm:items-center sm:justify-between">
+            <p>&copy; {{ date('Y') }} {{ $globalSetting->nama_aplikasi }}. Seluruh hak cipta dilindungi.</p>
+            <p>Dibangun dengan Laravel &amp; Tailwind CSS.</p>
+        </div>
+    </div>
+</footer>
 
     <script>
         const menuToggle = document.getElementById('menu-toggle');

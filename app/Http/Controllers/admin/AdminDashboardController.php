@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Absensi;
 use App\Models\Kegiatan;
 use App\Models\Pendaftaran;
+use App\Models\DataMaster;
+use App\Models\SiteSetting;
 
 class AdminDashboardController extends Controller
 {
@@ -13,9 +15,11 @@ class AdminDashboardController extends Controller
     {
         $totalPeserta = Pendaftaran::count();
         $menungguVerifikasi = Pendaftaran::where('status', 'daftar')->count();
+        $diterima = Pendaftaran::where('status', 'diterima')->count();
+        $ditolak = Pendaftaran::where('status', 'ditolak')->count();
+
         $kegiatanAktif = Kegiatan::where('status', 'dibuka')->count();
 
-        // Jumlah peserta yang sudah absen HARI INI (lintas semua kegiatan yang berjalan)
         $hadirHariIni = Absensi::whereDate('tanggal_hadir', now())->count();
 
         $kegiatanBerjalan = Kegiatan::withCount(['pendaftaran as jumlah_peserta'])
@@ -30,13 +34,29 @@ class AdminDashboardController extends Controller
             ->take(3)
             ->get();
 
+        // Data Master
+        $totalDataMaster = DataMaster::count();
+        $dataMasterUpdatedAt = optional(DataMaster::latest('updated_at')->first())
+            ->updated_at?->diffForHumans();
+
+        // Pengaturan situs
+        $setting = SiteSetting::current();
+        $pengaturanLogoAda = filled($setting->logo_path);
+        $pengaturanNamaAda = filled($setting->nama_aplikasi);
+
         return view('admin.dashboard', compact(
             'totalPeserta',
             'menungguVerifikasi',
+            'diterima',
+            'ditolak',
             'kegiatanAktif',
             'hadirHariIni',
             'kegiatanBerjalan',
             'antreanVerifikasi',
+            'totalDataMaster',
+            'dataMasterUpdatedAt',
+            'pengaturanLogoAda',
+            'pengaturanNamaAda',
         ));
     }
 }

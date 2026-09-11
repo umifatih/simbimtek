@@ -8,12 +8,40 @@
 
         {{-- ============ BAGIAN KIRI: TABEL RIWAYAT ============ --}}
         <div class="flex flex-col gap-4 lg:col-span-2">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <span class="text-xs font-semibold uppercase tracking-wider text-gold-600">Kegiatan Aktif</span>
-                    <h2 class="font-display text-lg font-semibold text-ink-900">{{ $kegiatan->nama ?? 'Belum ada kegiatan' }}</h2>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-gold-600">Kegiatan</span>
+
+                    @if ($daftarKegiatan->count() > 1)
+                        <select
+                            id="pilih-kegiatan"
+                            onchange="pilihKegiatan(this.value)"
+                            class="mt-1 block w-full rounded-xl border border-line bg-white px-3 py-2 font-display text-base font-semibold text-ink-900 outline-none focus:border-ink-900 focus:ring-1 focus:ring-ink-900"
+                        >
+                            @foreach ($daftarKegiatan as $k)
+                                <option value="{{ $k->id }}" {{ $kegiatan && $kegiatan->id === $k->id ? 'selected' : '' }}>
+                                    {{ $k->nama }}{{ $k->tanggal_selesai->lt(now()->startOfDay()) ? ' (Selesai)' : '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                    @else
+                        <h2 class="font-display text-lg font-semibold text-ink-900">{{ $kegiatan->nama ?? 'Belum ada kegiatan' }}</h2>
+                    @endif
                 </div>
-                <span id="jumlah-hadir" class="rounded-full bg-ink-900/[0.06] px-3 py-1 text-xs font-semibold text-ink-900">0 peserta</span>
+
+                <div class="flex items-center gap-2">
+                    @if ($kegiatan)
+                        <!-- [PERBAIKAN] Pemanggilan route export -->
+                        <a
+                            href="{{ route('admin.absensi.export', $kegiatan) }}"
+                            class="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3.5 py-2 text-xs font-semibold text-ink-900 transition hover:border-ink-900/30"
+                        >
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m0 0l-6-6m6 6l6-6" /></svg>
+                            Unduh Excel
+                        </a>
+                    @endif
+                    <span id="jumlah-hadir" class="rounded-full bg-ink-900/[0.06] px-3 py-1 text-xs font-semibold text-ink-900">0 peserta</span>
+                </div>
             </div>
 
             <div class="overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
@@ -57,12 +85,24 @@
 
             {{-- Kamera Scanner --}}
             <div class="rounded-2xl border border-line bg-white p-4 shadow-sm">
-                <div class="overflow-hidden rounded-xl border border-line bg-black">
-                    <div id="qr-reader" class="mx-auto w-full"></div>
-                </div>
-                <p id="camera-hint" class="mt-3 text-center text-xs text-ink/50">
-                    {{ $kegiatan ? 'Arahkan kamera ke QR peserta' : 'Belum ada kegiatan untuk diabsen' }}
-                </p>
+                @if ($bisaAbsen)
+                    <div class="overflow-hidden rounded-xl border border-line bg-black">
+                        <div id="qr-reader" class="mx-auto w-full"></div>
+                    </div>
+                    <p id="camera-hint" class="mt-3 text-center text-xs text-ink/50">
+                        {{ $kegiatan ? 'Arahkan kamera ke QR peserta' : 'Belum ada kegiatan untuk diabsen' }}
+                    </p>
+                @else
+                    <div class="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-line bg-canvas py-10 text-center">
+                        <svg class="h-8 w-8 text-ink/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                        </svg>
+                        <p class="text-sm font-semibold text-ink-900">Absensi sudah ditutup</p>
+                        <p class="max-w-[220px] text-xs text-ink/50">
+                            Kegiatan ini sudah lewat tanggal selesainya. Data kehadiran yang sudah tercatat tetap bisa dilihat dan diunduh.
+                        </p>
+                    </div>
+                @endif
             </div>
 
             {{-- Banner Hasil --}}
@@ -86,7 +126,13 @@
         let jumlah = 0;
         let sedangProses = false;
 
-        const urlRiwayat = @json($kegiatan ? route('absensi.riwayat', $kegiatan) : null);
+        // [PERBAIKAN] Pemanggilan route riwayat
+        const urlRiwayat = @json($kegiatan ? route('admin.absensi.riwayat', $kegiatan) : null);
+
+        function pilihKegiatan(id) {
+            // [PERBAIKAN] Mengarah ke route halaman utama (GET)
+            window.location.href = '{{ route('admin.absensi.index') }}?kegiatan_id=' + id;
+        }
 
         function tampilkanHasil(status, judul, detail) {
             const warna = {
@@ -136,7 +182,6 @@
             jumlahHadir.textContent = `${jumlah} peserta`;
         }
 
-        // Ambil rekap absensi yang sudah tersimpan di database untuk tanggal terpilih.
         async function muatRiwayat(tanggal) {
             if (!urlRiwayat) {
                 baruRiwayatKosong('Belum ada peserta');
@@ -169,7 +214,8 @@
             const tanggalTerpilih = tanggalInput.value;
 
             try {
-                const res = await fetch('{{ route('absensi.scan') }}', {
+                // [PERBAIKAN] Mengarah ke route khusus POST (Scanner API)
+                const res = await fetch('{{ route('admin.absensi.process') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -198,7 +244,7 @@
             setTimeout(() => { sedangProses = false; }, 2000);
         }
 
-        @if($kegiatan)
+        @if($bisaAbsen)
         const qr = new Html5Qrcode('qr-reader');
         qr.start(
             { facingMode: 'environment' },
@@ -213,7 +259,6 @@
             muatRiwayat(tanggalInput.value);
         });
 
-        // Muat rekap begitu halaman dibuka
         muatRiwayat(tanggalInput.value);
     </script>
 @endsection

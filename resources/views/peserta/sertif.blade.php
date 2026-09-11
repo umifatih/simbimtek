@@ -1,10 +1,3 @@
-{{--
-    resources/views/sertifikat/index.blade.php
-    Route: GET /sertifikat
-
-    $pendaftaran (kalau ketemu) butuh: ->id, ->nomor_pendaftaran, ->nama_gelar, ->status,
-    ->kegiatan->nama, ->kegiatan->tanggal, ->kegiatan->tanggal_selesai (opsional, untuk pesan "tersedia setelah ...")
---}}
 @extends('layouts.app')
 
 @section('title', 'Cetak Sertifikat')
@@ -48,14 +41,14 @@
             @if ($dicari && $pendaftaran && $pendaftaran->status === 'sertifikat')
                 {{-- ============ SERTIFIKAT SIAP ============ --}}
                 <div class="rounded-2xl border-2 border-gold/40 bg-white p-5 shadow-md shadow-ink-900/[0.05] sm:p-7">
-                    {{-- preview mini sertifikat --}}
                     <div class="relative overflow-hidden rounded-xl border border-gold/30 bg-[radial-gradient(ellipse_80%_80%_at_50%_0%,rgba(201,154,61,0.08),transparent)] p-6 text-center sm:p-10">
                         <div class="pointer-events-none absolute inset-3 rounded-lg border border-dashed border-gold/40 sm:inset-4"></div>
                         <p class="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-600 sm:text-xs">Sertifikat Diberikan Kepada</p>
                         <p class="mt-3 font-display text-lg font-bold text-ink-900 sm:text-2xl">{{ $pendaftaran->nama_gelar }}</p>
                         <p class="mt-2 text-xs text-ink/55 sm:text-sm">atas partisipasinya dalam</p>
                         <p class="mt-1 text-sm font-semibold text-ink-900 sm:text-base">{{ $pendaftaran->kegiatan->nama }}</p>
-                        <p class="mt-1 font-mono text-xs text-ink/50">{{ $pendaftaran->kegiatan->tanggal }}</p>
+                        {{-- [PERBAIKAN BUG] Menggunakan teks_jadwal --}}
+                        <p class="mt-1 font-mono text-xs text-ink/50">{{ $pendaftaran->kegiatan->teks_jadwal }}</p>
                     </div>
 
                     <a
@@ -69,18 +62,36 @@
 
             @elseif ($dicari && $pendaftaran)
                 {{-- ============ KETEMU, TAPI BELUM SAATNYA ============ --}}
+                @php
+                    $progres = $pendaftaran->progresAbsensi();
+                    $persen = $progres['wajib'] > 0 ? min(100, round(($progres['hadir'] / $progres['wajib']) * 100)) : 0;
+                @endphp
                 <div class="rounded-2xl border border-dashed border-line p-8 text-center sm:p-10">
                     <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gold/10">
                         <svg class="h-6 w-6 text-gold-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" /></svg>
                     </div>
-                    <p class="mt-4 font-display text-base font-semibold text-ink-900">Sertifikat belum terbit</p>
+                    <p class="mt-4 font-display text-base font-semibold text-ink-900">Sertifikat Belum Terbit</p>
                     <p class="mt-2 text-sm leading-relaxed text-ink/60">
-                        Halo {{ explode(' ', $pendaftaran->nama_gelar)[0] }}, sertifikat untuk
-                        <span class="font-medium text-ink-900">{{ $pendaftaran->kegiatan->nama }}</span>
-                        baru terbit setelah kegiatan (<span class="font-mono">{{ $pendaftaran->kegiatan->tanggal }}</span>)
-                        selesai dan kehadiranmu tercatat lewat absensi QR.
+                        Halo {{ explode(' ', $pendaftaran->nama_gelar)[0] }}, sertifikat untuk 
+                        <span class="font-medium text-ink-900">{{ $pendaftaran->kegiatan->nama }}</span> 
+                        saat ini masih terkunci.
                     </p>
-                    <a href="/cek-status?nomor_pendaftaran={{ $pendaftaran->nomor_pendaftaran }}" class="mt-5 inline-flex items-center justify-center gap-2 rounded-full border border-line bg-white px-6 py-3 text-sm font-semibold text-ink-900 transition hover:border-ink-900/30">
+
+                    {{-- [TAMBAHAN UX] Menampilkan kotak progres kehadiran --}}
+                    <div class="mx-auto mt-6 max-w-sm rounded-xl border border-line bg-canvas p-5 text-left">
+                        <div class="mb-2 flex items-center justify-between text-xs">
+                            <span class="font-medium text-ink/60">Status Kehadiran</span>
+                            <span class="font-mono font-bold text-ink-900">{{ $progres['hadir'] }} / {{ $progres['wajib'] }} Hari</span>
+                        </div>
+                        <div class="h-2 w-full overflow-hidden rounded-full bg-line/50">
+                            <div class="h-full rounded-full bg-gold-500 transition-all duration-500" style="width: {{ $persen }}%;"></div>
+                        </div>
+                        <p class="mt-3 text-[11px] text-ink/50 text-center">
+                            Pastikan kamu melakukan scan QR setiap harinya. Sertifikat otomatis terbuka setelah kehadiran mencapai 100%.
+                        </p>
+                    </div>
+
+                    <a href="/cek-status?nomor_pendaftaran={{ $pendaftaran->nomor_pendaftaran }}" class="mt-6 inline-flex items-center justify-center gap-2 rounded-full border border-line bg-white px-6 py-3 text-sm font-semibold text-ink-900 transition hover:border-ink-900/30">
                         Cek Status Lengkap
                     </a>
                 </div>

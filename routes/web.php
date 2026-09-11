@@ -20,7 +20,6 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 
 Route::get('/', [BerandaController::class, 'index'])->name('beranda');
 
-// [UPDATE] Penyesuaian pemanggilan view di dalam folder peserta
 Route::get('/cara-kerja', fn () => view('peserta.cara-kerja'))->name('cara-kerja');
 
 Route::get('/pendaftaran', [PendaftaranController::class, 'create'])->name('pendaftaran.create');
@@ -58,9 +57,11 @@ Route::prefix('admin')->group(function () {
 
     Route::get('/peserta', [AdminPesertaController::class, 'index'])->name('admin.peserta.index');
 
-    Route::get('/absensi', [AbsensiController::class, 'indexScan'])->name('admin.absensi.scan');
-    Route::get('/absensi/{kegiatan}/riwayat', [AbsensiController::class, 'riwayat'])->name('absensi.riwayat');
-    Route::post('/absensi/scan', [AbsensiController::class, 'scan'])->name('absensi.scan');
+    // [PERBAIKAN] Penamaan route dirapikan agar tidak memicu MethodNotAllowed
+    Route::get('/absensi', [AbsensiController::class, 'indexScan'])->name('admin.absensi.index'); // Untuk halaman
+    Route::get('/absensi/{kegiatan}/riwayat', [AbsensiController::class, 'riwayat'])->name('admin.absensi.riwayat'); // Untuk fetch data
+    Route::post('/absensi/scan', [AbsensiController::class, 'scan'])->name('admin.absensi.process'); // Untuk POST scanner
+    Route::get('/absensi/{kegiatan}/export', [AbsensiController::class, 'exportExcel'])->name('admin.absensi.export');
 
     Route::get('/cetak', fn () => view('admin.cetak.index'))->name('admin.cetak.index');
     Route::get('/cetak/daftar-peserta', fn () => view('admin.cetak.daftar-peserta'))->name('admin.cetak.daftar-peserta');

@@ -5,7 +5,6 @@ use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\JadwalController;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\CekStatusController;
-use App\Http\Controllers\SertifikatController;
 use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminPesertaController;
@@ -13,6 +12,7 @@ use App\Http\Controllers\Admin\AdminKegiatanController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\DataMasterController;
 use App\Http\Controllers\Admin\AdminPengaturanController; // [BARU]
+use App\Http\Controllers\Admin\AdminSertifikatController; // [BARU]
 
 /*
 |--------------------------------------------------------------------------
@@ -35,7 +35,6 @@ Route::get('/pendaftaran/{pendaftaran}/unduh/{jenis}', [PendaftaranController::c
     ->name('pendaftaran.unduh');
 
 Route::get('/cek-status', [CekStatusController::class, 'index'])->name('cek-status');
-Route::get('/sertifikat', [SertifikatController::class, 'index'])->name('sertifikat');
 
 /*
 |--------------------------------------------------------------------------
@@ -63,7 +62,7 @@ Route::prefix('admin')->group(function () {
     Route::delete('/data-master/{dataMaster}', [DataMasterController::class, 'destroy'])->name('admin.data-master.destroy');
     Route::get('/data-master/template', [DataMasterController::class, 'unduhTemplate'])->name('admin.data-master.template');
     Route::post('/data-master/rapikan', [DataMasterController::class, 'rapikan'])->name('admin.data-master.rapikan');
-    
+
     Route::get('/kegiatan', [AdminKegiatanController::class, 'index'])->name('admin.kegiatan.index');
     Route::post('/kegiatan', [AdminKegiatanController::class, 'store'])->name('admin.kegiatan.store');
     Route::put('/kegiatan/{kegiatan}', [AdminKegiatanController::class, 'update'])->name('admin.kegiatan.update');
@@ -80,7 +79,10 @@ Route::prefix('admin')->group(function () {
     Route::get('/cetak/daftar-hadir', fn () => view('admin.cetak.daftar-hadir'))->name('admin.cetak.daftar-hadir');
     Route::get('/cetak/konsumsi-atk', fn () => view('admin.cetak.konsumsi-atk'))->name('admin.cetak.konsumsi-atk');
 
-       // [BARU] Pengaturan beranda / identitas situs
+    // [BARU] Sertifikat — daftar peserta siap cetak per kegiatan
+    Route::get('/sertifikat', [AdminSertifikatController::class, 'index'])->name('admin.sertifikat.index');
+
+    // [BARU] Pengaturan beranda / identitas situs
     Route::get('/pengaturan', [AdminPengaturanController::class, 'edit'])->name('admin.pengaturan.edit');
     Route::post('/pengaturan', [AdminPengaturanController::class, 'update'])->name('admin.pengaturan.update');
 

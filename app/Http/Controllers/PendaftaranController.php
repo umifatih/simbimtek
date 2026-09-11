@@ -192,7 +192,7 @@ class PendaftaranController extends Controller
 
         if ($jenis === 'sertifikat') {
             abort_unless(
-                $pendaftaran->status === 'sertifikat',
+                $pendaftaran->absensiLengkap(),
                 403,
                 'Sertifikat belum bisa diunduh — kehadiranmu belum tercatat lengkap.'
             );

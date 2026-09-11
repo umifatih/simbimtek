@@ -13,7 +13,7 @@
         <div class="pointer-events-none absolute inset-x-0 top-0 h-64 opacity-[0.4] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_0%,#000_20%,transparent_75%)]" style="background-image: radial-gradient(circle, #0F2A43 1.4px, transparent 1.4px); background-size: 24px 24px;"></div>
 
         <div class="relative mx-auto max-w-3xl px-5 text-center sm:px-6 lg:px-8">
-            
+
             @if (session('success') && $pendaftaran)
                 {{-- TAMPILAN HERO KETIKA BARU SAJA SUKSES MENDAFTAR --}}
                 <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full border-2 border-dashed border-gold/50 bg-white shadow-sm sm:h-16 sm:w-16">
@@ -75,7 +75,7 @@
                     $urutanStatus = array_column($tahapan, 'key');
                     $stepAktif = array_search($pendaftaran->status, $urutanStatus);
                     $stepAktif = $stepAktif === false ? 0 : $stepAktif;
-                    $sertifikatSiap = $pendaftaran->status === 'sertifikat';
+                    $sertifikatSiap = $pendaftaran->absensiLengkap();
                     $progres = $pendaftaran->progresAbsensi();
                 @endphp
 
@@ -194,7 +194,7 @@
                 <div class="mt-7 rounded-2xl border-2 border-gold/30 bg-white p-5 shadow-md shadow-ink-900/[0.05] sm:mt-8">
                     <p class="text-xs font-semibold uppercase tracking-wider text-gold-600">Pusat Unduhan</p>
                     <h2 class="mt-1 font-display text-sm font-semibold text-ink-900">Dokumen Pendaftaran & Kegiatan</h2>
-                    
+
                     <div class="mt-4 grid gap-3 sm:grid-cols-2">
                         @php
                             $dokumen = [

@@ -95,24 +95,36 @@
                             <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-ink-900/30 bg-canvas font-mono text-xs font-semibold text-ink-900">2</span>
                             <h2 class="font-display text-base font-semibold text-ink-900">Data Diri Peserta</h2>
                         </div>
+                        <p class="mt-2 text-xs text-ink/45">
+                            Sudah pernah daftar sebelumnya? Ketik NIP atau nama kamu di kolom yang sesuai — data akan muncul untuk dipilih dan langsung terisi otomatis.
+                        </p>
 
                         <div class="mt-5 grid gap-4 sm:grid-cols-2 sm:gap-5">
-                            <div class="sm:col-span-2">
+
+                            {{-- ===== Unit Kerja: combobox pencarian dari Data Master ===== --}}
+                            <div class="relative sm:col-span-2" data-combobox="unit_kerja">
                                 <label for="unit_kerja" class="text-sm font-semibold text-ink-900">Unit Kerja <span class="text-gold-600">*</span></label>
-                                <p class="mt-0.5 text-xs text-ink/45">Gunakan huruf kapital</p>
-                                <input type="text" id="unit_kerja" name="unit_kerja" value="{{ old('unit_kerja') }}" required placeholder="Contoh: SD NEGERI 1 MANDIRAJA KULON" class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm uppercase text-ink-900 outline-none transition placeholder:text-ink/35 placeholder:normal-case focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                                <p class="mt-0.5 text-xs text-ink/45">Ketik nama sekolah, lalu pilih dari daftar master. Kepala Sekolah &amp; NIP KS akan terisi otomatis.</p>
+                                <input type="text" id="unit_kerja" name="unit_kerja" value="{{ old('unit_kerja') }}" required autocomplete="off" placeholder="Contoh: SD NEGERI 1 MANDIRAJA KULON" class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm uppercase text-ink-900 outline-none transition placeholder:text-ink/35 placeholder:normal-case focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                                <div class="kotak-saran absolute z-20 mt-1 hidden w-full overflow-hidden rounded-xl border border-line bg-white shadow-lg"></div>
                                 @error('unit_kerja') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                             </div>
 
                             <div class="sm:col-span-2">
                                 <label for="nama_gelar" class="text-sm font-semibold text-ink-900">Nama dan Gelar <span class="text-gold-600">*</span></label>
-                                <input type="text" id="nama_gelar" name="nama_gelar" value="{{ old('nama_gelar') }}" required placeholder="Contoh: Siti Aminah, S.Pd." class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none transition placeholder:text-ink/35 focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                                <div class="relative" data-combobox="peserta-nama">
+                                    <input type="text" id="nama_gelar" name="nama_gelar" value="{{ old('nama_gelar') }}" required autocomplete="off" placeholder="Contoh: Siti Aminah, S.Pd." class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none transition placeholder:text-ink/35 focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                                    <div class="kotak-saran absolute z-20 mt-1 hidden w-full overflow-hidden rounded-xl border border-line bg-white shadow-lg"></div>
+                                </div>
                                 @error('nama_gelar') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                             </div>
 
                             <div>
                                 <label for="nip" class="text-sm font-semibold text-ink-900">NIP <span class="text-gold-600">*</span></label>
-                                <input type="text" id="nip" name="nip" value="{{ old('nip') }}" required inputmode="numeric" placeholder="18 digit NIP" class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 font-mono text-sm text-ink-900 outline-none transition placeholder:font-sans placeholder:text-ink/35 focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                                <div class="relative" data-combobox="peserta-nip">
+                                    <input type="text" id="nip" name="nip" value="{{ old('nip') }}" required inputmode="numeric" autocomplete="off" placeholder="18 digit NIP" class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 font-mono text-sm text-ink-900 outline-none transition placeholder:font-sans placeholder:text-ink/35 focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
+                                    <div class="kotak-saran absolute z-20 mt-1 hidden w-full overflow-hidden rounded-xl border border-line bg-white shadow-lg"></div>
+                                </div>
                                 <p id="nip-status" class="mt-1.5 hidden text-xs font-medium"></p>
                                 @error('nip') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                             </div>
@@ -123,7 +135,6 @@
                                 @error('pangkat_golongan') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                             </div>
 
-                            {{-- ===== PERUBAHAN: TEMPAT DAN TANGGAL LAHIR DIPISAH ===== --}}
                             <div>
                                 <label for="tempat_lahir" class="text-sm font-semibold text-ink-900">Tempat Lahir <span class="text-gold-600">*</span></label>
                                 <input type="text" id="tempat_lahir" name="tempat_lahir" value="{{ old('tempat_lahir') }}" required placeholder="Contoh: Purbalingga" class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none transition placeholder:text-ink/35 focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
@@ -135,7 +146,6 @@
                                 <input type="date" id="tanggal_lahir" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}" required class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none transition focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
                                 @error('tanggal_lahir') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                             </div>
-                            {{-- ======================================================== --}}
 
                             <div>
                                 <label for="jabatan" class="text-sm font-semibold text-ink-900">Jabatan <span class="text-gold-600">*</span></label>
@@ -143,8 +153,19 @@
                                     <option value="" {{ old('jabatan') ? '' : 'selected' }}>— Pilih jabatan —</option>
                                     <option value="Bendahara BOSP" {{ old('jabatan') === 'Bendahara BOSP' ? 'selected' : '' }}>Bendahara BOSP</option>
                                     <option value="Operator BOSP" {{ old('jabatan') === 'Operator BOSP' ? 'selected' : '' }}>Operator BOSP</option>
+                                    <option value="lainnya" {{ old('jabatan') === 'lainnya' ? 'selected' : '' }}>Lainnya</option>
                                 </select>
                                 @error('jabatan') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
+
+                                <input
+                                    type="text"
+                                    id="jabatan_lainnya"
+                                    name="jabatan_lainnya"
+                                    value="{{ old('jabatan_lainnya') }}"
+                                    placeholder="Tulis jabatan lain"
+                                    class="mt-2 w-full {{ old('jabatan') === 'lainnya' ? '' : 'hidden' }} rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none transition placeholder:text-ink/35 focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10"
+                                >
+                                @error('jabatan_lainnya') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                             </div>
 
                             <div>
@@ -157,6 +178,7 @@
                         {{-- --- Sub bagian: Data Kepala Sekolah --- --}}
                         <div class="mt-6 border-t border-line pt-6">
                             <p class="text-xs font-semibold uppercase tracking-wider text-ink/40">Data Kepala Sekolah</p>
+                            <p class="mt-1 text-xs text-ink/45">Terisi otomatis begitu Unit Kerja dipilih dari daftar master. Boleh diedit manual bila perlu.</p>
                             <div class="mt-4 grid gap-4 sm:grid-cols-2 sm:gap-5">
                                 <div class="sm:col-span-2">
                                     <label for="nama_gelar_kepsek" class="text-sm font-semibold text-ink-900">Nama dan Gelar Kepala Sekolah <span class="text-gold-600">*</span></label>
@@ -174,7 +196,6 @@
                     </div>
 
                     {{-- --- Persetujuan & Submit --- --}}
-                    {{-- Checkbox ini sudah memiliki tag `required` dari HTML, jadi jika tidak dicentang, tombol Submit tidak akan memproses form --}}
                     <div class="rounded-2xl bg-canvas p-5 sm:p-7">
                         <label class="flex items-start gap-3 cursor-pointer">
                             <input type="checkbox" name="setuju" required class="mt-0.5 h-4 w-4 shrink-0 rounded border-line text-ink-900 focus:ring-ink-900/20 cursor-pointer">
@@ -262,21 +283,36 @@
         kegiatanSelect?.addEventListener('change', syncKegiatanInfo);
         if (kegiatanSelect?.value) syncKegiatanInfo();
 
-        // ===== Autofill dari NIP =====
-        const nipInput = document.getElementById('nip');
-        const nipStatus = document.getElementById('nip-status');
-        let timerNip = null;
+        // Unit Kerja: paksa huruf kapital pada nilai yang benar-benar dikirim
+        const unitKerjaInput = document.getElementById('unit_kerja');
+        unitKerjaInput?.addEventListener('input', (e) => {
+            const pos = e.target.selectionStart;
+            e.target.value = e.target.value.toUpperCase();
+            e.target.setSelectionRange(pos, pos);
+        });
 
-        const fieldTerhubung = {
-            unit_kerja: document.getElementById('unit_kerja'),
-            nama_gelar: document.getElementById('nama_gelar'),
-            pangkat_golongan: document.getElementById('pangkat_golongan'),
-            // Kita keluarkan TTL dari logic autofill sementara
-            jabatan: document.getElementById('jabatan'),
-            email: document.getElementById('email'),
-            nama_gelar_kepsek: document.getElementById('nama_gelar_kepsek'),
-            nip_kepsek: document.getElementById('nip_kepsek'),
-        };
+        // Jabatan: munculkan kolom manual saat "Lainnya" dipilih
+        const jabatanSelect = document.getElementById('jabatan');
+        const jabatanLainnya = document.getElementById('jabatan_lainnya');
+
+        function syncJabatanLainnya() {
+            if (jabatanSelect.value === 'lainnya') {
+                jabatanLainnya.classList.remove('hidden');
+                jabatanLainnya.required = true;
+            } else {
+                jabatanLainnya.classList.add('hidden');
+                jabatanLainnya.required = false;
+                jabatanLainnya.value = '';
+            }
+        }
+
+        jabatanSelect?.addEventListener('change', syncJabatanLainnya);
+        syncJabatanLainnya();
+
+        // =====================================================================
+        // KOMPONEN COMBOBOX PENCARIAN (dipakai untuk 3 kolom: unit_kerja, nama, nip)
+        // =====================================================================
+        const nipStatus = document.getElementById('nip-status');
 
         function tampilkanStatusNip(teks, warna) {
             nipStatus.textContent = teks;
@@ -284,7 +320,21 @@
             nipStatus.classList.remove('hidden');
         }
 
-        async function cariDataNip(nip) {
+        // Field yang ikut terisi begitu peserta lama ditemukan (lewat NIP maupun Nama)
+        const fieldPeserta = {
+            unit_kerja: document.getElementById('unit_kerja'),
+            nama_gelar: document.getElementById('nama_gelar'),
+            nip: document.getElementById('nip'),
+            pangkat_golongan: document.getElementById('pangkat_golongan'),
+            tempat_lahir: document.getElementById('tempat_lahir'),
+            tanggal_lahir: document.getElementById('tanggal_lahir'),
+            jabatan: document.getElementById('jabatan'),
+            email: document.getElementById('email'),
+            nama_gelar_kepsek: document.getElementById('nama_gelar_kepsek'),
+            nip_kepsek: document.getElementById('nip_kepsek'),
+        };
+
+        async function isiDataPesertaDariNip(nip) {
             try {
                 const res = await fetch(`/pendaftaran/cari-nip/${encodeURIComponent(nip)}`);
                 const hasil = await res.json();
@@ -294,42 +344,149 @@
                     return;
                 }
 
-                Object.entries(fieldTerhubung).forEach(([key, el]) => {
-                    if (el && hasil.data[key] != null) {
+                Object.entries(fieldPeserta).forEach(([key, el]) => {
+                    if (el && hasil.data[key] != null && hasil.data[key] !== '') {
                         el.value = hasil.data[key];
                     }
                 });
+                // pastikan Unit Kerja tetap huruf kapital sesuai aturan form
+                if (fieldPeserta.unit_kerja) fieldPeserta.unit_kerja.value = fieldPeserta.unit_kerja.value.toUpperCase();
 
-                // Memecah "Tempat, Tanggal Lahir" dari database sebelumnya jadi dua kolom
-                if (hasil.data.tempat_tanggal_lahir) {
-                    const ttlSplit = hasil.data.tempat_tanggal_lahir.split(', ');
-                    if (ttlSplit.length > 0) {
-                        document.getElementById('tempat_lahir').value = ttlSplit[0]; // Isi nama kota/tempat
-                    }
+                // Kalau jabatan hasil data lama bukan salah satu opsi baku, tampilkan sebagai "Lainnya"
+                const opsiBaku = ['Bendahara BOSP', 'Operator BOSP'];
+                if (fieldPeserta.jabatan.value && !opsiBaku.includes(fieldPeserta.jabatan.value)) {
+                    jabatanLainnya.value = fieldPeserta.jabatan.value;
+                    fieldPeserta.jabatan.value = 'lainnya';
                 }
+                syncJabatanLainnya();
 
                 tampilkanStatusNip('✓ Data ditemukan dari pendaftaran sebelumnya, otomatis diisi. Silakan periksa kembali.', 'text-success');
             } catch (e) {
-                // gagal cek
+                // gagal ambil data, biarkan peserta isi manual
             }
         }
 
-        nipInput?.addEventListener('input', () => {
-            clearTimeout(timerNip);
-            nipStatus.classList.add('hidden');
+        function isiDataSekolah(data) {
+            const kepsekNama = document.getElementById('nama_gelar_kepsek');
+            const kepsekNip = document.getElementById('nip_kepsek');
+            if (kepsekNama) kepsekNama.value = data.nama_kepsek ?? '';
+            if (kepsekNip) kepsekNip.value = data.nip_kepsek ?? '';
+        }
 
-            const nip = nipInput.value.trim();
-            if (nip.length < 8) return;
+        /**
+         * Membuat combobox: mengetik di `input` -> panggil `urlPencarian?q=...` (debounce),
+         * tampilkan daftar saran di `.kotak-saran`, klik saran -> jalankan `onPilih(item)`.
+         * `renderBaris(item)` mengembalikan HTML satu baris saran.
+         */
+        function pasangCombobox({ input, kotakSaran, urlPencarian, minKarakter = 2, renderBaris, onPilih }) {
+            if (!input || !kotakSaran) return;
+            let timer = null;
 
-            timerNip = setTimeout(() => cariDataNip(nip), 600);
+            function sembunyikan() {
+                kotakSaran.classList.add('hidden');
+                kotakSaran.innerHTML = '';
+            }
+
+            input.addEventListener('input', () => {
+                clearTimeout(timer);
+                nipStatus?.classList.add('hidden');
+                const q = input.value.trim();
+
+                if (q.length < minKarakter) {
+                    sembunyikan();
+                    return;
+                }
+
+                timer = setTimeout(async () => {
+                    try {
+                        const res = await fetch(`${urlPencarian}?q=${encodeURIComponent(q)}`);
+                        const hasil = await res.json();
+                        const daftar = hasil.data || [];
+
+                        if (daftar.length === 0) {
+                            sembunyikan();
+                            return;
+                        }
+
+                        kotakSaran.innerHTML = daftar.map((item, i) => `
+                            <button type="button" data-idx="${i}" class="block w-full border-b border-line/60 px-4 py-2.5 text-left text-sm last:border-b-0 hover:bg-canvas">
+                                ${renderBaris(item)}
+                            </button>
+                        `).join('');
+
+                        kotakSaran.querySelectorAll('button[data-idx]').forEach(btn => {
+                            btn.addEventListener('click', () => {
+                                const item = daftar[Number(btn.dataset.idx)];
+                                onPilih(item);
+                                sembunyikan();
+                            });
+                        });
+
+                        kotakSaran.classList.remove('hidden');
+                    } catch (e) {
+                        sembunyikan();
+                    }
+                }, 350);
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!input.parentElement.contains(e.target)) sembunyikan();
+            });
+        }
+
+        // --- Combobox 1: Unit Kerja, dari Data Master sekolah ---
+        pasangCombobox({
+            input: document.getElementById('unit_kerja'),
+            kotakSaran: document.querySelector('[data-combobox="unit_kerja"] .kotak-saran'),
+            urlPencarian: '/pendaftaran/cari-sekolah',
+            renderBaris: (item) => `
+                <span class="font-medium text-ink-900">${item.unit_kerja}</span>
+                <span class="block text-xs text-ink/45">Kepsek: ${item.nama_kepsek ?? '-'}</span>
+            `,
+            onPilih: (item) => {
+                const el = document.getElementById('unit_kerja');
+                el.value = item.unit_kerja.toUpperCase();
+                isiDataSekolah(item);
+            },
         });
 
-        // Unit Kerja: paksa huruf kapital pada nilai yang benar-benar dikirim
-        const unitKerjaInput = document.getElementById('unit_kerja');
-        unitKerjaInput?.addEventListener('input', (e) => {
-            const pos = e.target.selectionStart;
-            e.target.value = e.target.value.toUpperCase();
-            e.target.setSelectionRange(pos, pos);
+        // --- Combobox 2: Nama peserta (cari peserta lama berdasarkan nama) ---
+        pasangCombobox({
+            input: document.getElementById('nama_gelar'),
+            kotakSaran: document.querySelector('[data-combobox="peserta-nama"] .kotak-saran'),
+            urlPencarian: '/pendaftaran/cari-peserta',
+            minKarakter: 3,
+            renderBaris: (item) => `
+                <span class="font-medium text-ink-900">${item.nama_gelar}</span>
+                <span class="block text-xs text-ink/45">${item.unit_kerja ?? '-'} · NIP ${item.nip}</span>
+            `,
+            onPilih: (item) => isiDataPesertaDariNip(item.nip),
+        });
+
+        // --- Combobox 3: NIP peserta (cari peserta lama berdasarkan NIP) ---
+        pasangCombobox({
+            input: document.getElementById('nip'),
+            kotakSaran: document.querySelector('[data-combobox="peserta-nip"] .kotak-saran'),
+            urlPencarian: '/pendaftaran/cari-peserta',
+            minKarakter: 3,
+            renderBaris: (item) => `
+                <span class="font-mono font-medium text-ink-900">${item.nip}</span>
+                <span class="block text-xs text-ink/45">${item.nama_gelar} · ${item.unit_kerja ?? '-'}</span>
+            `,
+            onPilih: (item) => {
+                document.getElementById('nip').value = item.nip;
+                isiDataPesertaDariNip(item.nip);
+            },
+        });
+
+        // Ketik NIP lengkap (>=8 digit) tanpa memilih saran -> tetap coba autofill langsung
+        const nipInput = document.getElementById('nip');
+        let timerNipLangsung = null;
+        nipInput?.addEventListener('input', () => {
+            clearTimeout(timerNipLangsung);
+            const nip = nipInput.value.trim();
+            if (nip.length < 8) return;
+            timerNipLangsung = setTimeout(() => isiDataPesertaDariNip(nip), 600);
         });
     </script>
 

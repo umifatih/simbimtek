@@ -6,12 +6,9 @@
 
     {{-- ============ HERO ============ --}}
     <section class="relative overflow-hidden bg-[radial-gradient(ellipse_90%_60%_at_50%_-10%,rgba(15,42,67,0.08),transparent)]">
-        {{-- ornamen: cahaya lingkaran & pola titik, sengaja dibuat kelihatan --}}
         <div class="pointer-events-none absolute -top-32 right-[-6%] h-[34rem] w-[34rem] rounded-full bg-gold/30 blur-[100px]"></div>
         <div class="pointer-events-none absolute -bottom-40 left-[-10%] h-[28rem] w-[28rem] rounded-full bg-ink-700/20 blur-[90px]"></div>
         <div class="pointer-events-none absolute inset-x-0 top-0 h-[28rem] opacity-[0.5] [mask-image:radial-gradient(ellipse_65%_65%_at_50%_0%,#000_25%,transparent_75%)]" style="background-image: radial-gradient(circle, #0F2A43 1.4px, transparent 1.4px); background-size: 24px 24px;"></div>
-
-        {{-- garis diagonal tipis ala kop surat resmi --}}
         <div class="pointer-events-none absolute left-0 top-0 h-full w-1.5 bg-gradient-to-b from-gold via-ink-900 to-gold/60"></div>
 
         <div class="relative mx-auto max-w-7xl px-5 pb-12 pt-10 sm:px-6 sm:pb-16 sm:pt-14 lg:px-8 lg:pt-20">
@@ -24,18 +21,11 @@
                     </span>
 
                     <h1 class="mt-5 font-display text-[2rem] font-bold leading-[1.15] tracking-tight text-ink-900 sm:mt-6 sm:text-4xl md:text-5xl lg:text-[3.4rem] lg:leading-[1.1]">
-                        Dari daftar sampai
-                        <span class="relative inline-block">
-                            sertifikat,
-                            <svg class="pointer-events-none absolute -bottom-1 left-0 w-full" height="10" viewBox="0 0 220 10" preserveAspectRatio="none"><path d="M2,7 C60,-1 160,-1 218,7" fill="none" stroke="#C99A3D" stroke-width="4" stroke-linecap="round"/></svg>
-                        </span>
-                        satu alur yang jelas.
+                        {{ $setting->tagline }}
                     </h1>
 
                     <p class="mt-4 max-w-xl text-sm leading-relaxed text-ink/70 sm:mt-6 sm:text-base lg:text-lg">
-                        SIMBIMTEK menyatukan pendaftaran, penerbitan SPPD, dan sertifikat
-                        bimbingan teknis dalam satu tempat — peserta cukup daftar sekali dengan NIP,
-                        dan data lamanya otomatis dipakai untuk kegiatan berikutnya.
+                        {{ $setting->deskripsi }}
                     </p>
 
                     <div class="mt-7 flex flex-col gap-3 sm:mt-9 sm:flex-row">
@@ -66,18 +56,16 @@
                     </div>
                 </div>
 
-                {{-- Signature element: alur mini + stempel resmi — merefleksikan tahap berkas peserta yang sesungguhnya --}}
                 <div class="relative mt-2 lg:col-span-5 lg:mt-0">
                     <div class="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gold/30 blur-2xl"></div>
 
-                    {{-- stempel/seal berputar, memberi kesan dokumen resmi & bersertifikat — dikecilkan & digeser di mobile supaya tidak menumpuk konten --}}
                     <div class="pointer-events-none absolute -right-2 -top-4 z-20 h-14 w-14 -rotate-[8deg] sm:-right-4 sm:-top-7 sm:h-20 sm:w-20 lg:-right-5 lg:-top-9 lg:h-28 lg:w-28 lg:-rotate-[10deg]">
                         <svg viewBox="0 0 100 100" class="h-full w-full drop-shadow-sm">
                             <circle cx="50" cy="50" r="46" fill="#F5F7F6" stroke="#C99A3D" stroke-width="1.6" stroke-dasharray="2.5 3.5"/>
                             <circle cx="50" cy="50" r="37" fill="none" stroke="#0F2A43" stroke-width="1"/>
                             <path id="sealPath" d="M 50,50 m -30,0 a 30,30 0 1,1 60,0 a 30,30 0 1,1 -60,0" fill="none"/>
                             <text font-size="7.2" fill="#0F2A43" letter-spacing="2.2" font-family="'JetBrains Mono', monospace" font-weight="500">
-                                <textPath href="#sealPath" startOffset="2%">SIMBIMTEK • SISTEM RESMI •</textPath>
+                                <textPath href="#sealPath" startOffset="2%">{{ strtoupper($setting->nama_aplikasi) }} • SISTEM RESMI •</textPath>
                             </text>
                             <path d="M38,50 l8,8 l16,-18" fill="none" stroke="#C99A3D" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
@@ -119,7 +107,6 @@
         </div>
     </section>
 
-    {{-- gelombang: transisi canvas -> putih --}}
     <div class="relative -mb-px h-8 w-full overflow-hidden sm:h-14" aria-hidden="true">
         <svg viewBox="0 0 1440 60" preserveAspectRatio="none" class="absolute bottom-0 h-full w-full">
             <path d="M0,22 C240,50 480,2 720,20 C960,38 1200,54 1440,24 L1440,60 L0,60 Z" class="fill-white"></path>
@@ -134,12 +121,10 @@
                 <div class="lg:col-span-5">
                     <p class="text-xs font-semibold uppercase tracking-wider text-gold-600">Tentang Program</p>
                     <h2 class="mt-2 font-display text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
-                        Bimtek Bendahara &amp; Operator BOSP
+                        {{ $setting->tentang_program_judul }}
                     </h2>
                     <p class="mt-4 text-sm leading-relaxed text-ink/65 sm:text-base">
-                        Bimbingan teknis pengelolaan Bantuan Operasional Satuan Pendidikan (BOSP) bagi
-                        Bendahara dan Operator sekolah, mulai dari perencanaan anggaran, pelaporan, sampai
-                        pertanggungjawaban dana — sesuai ketentuan yang berlaku.
+                        {{ $setting->tentang_program_deskripsi }}
                     </p>
 
                     <div class="mt-6 rounded-2xl border border-gold/25 bg-gold/[0.05] p-5">
@@ -195,24 +180,24 @@
                                 </div>
                                 <p class="mt-3 font-display text-sm font-semibold text-ink-900">{{ $m['judul'] }}</p>
                                 <p class="mt-1.5 text-sm leading-relaxed text-ink/60">{{ $m['desc'] }}</p>
-                            </div>
-                        @endforeach
-                    </div>
+                          </div>
+                      @endforeach
+                  </div>
 
-                    <div class="mt-5 flex items-start gap-3 rounded-xl bg-canvas p-4">
-                        <svg class="mt-0.5 h-4 w-4 shrink-0 text-ink/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
-                        <p class="text-xs leading-relaxed text-ink/60">
-                            Peserta cukup membawa Surat Tugas dan SPPD yang sudah diunduh otomatis setelah
-                            mendaftar — lihat jadwal kegiatan yang sedang dibuka di bawah ini.
-                        </p>
-                    </div>
-                </div>
+                  <div class="mt-5 flex items-start gap-3 rounded-xl bg-canvas p-4">
+                      <svg class="mt-0.5 h-4 w-4 shrink-0 text-ink/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>
+                      <p class="text-xs leading-relaxed text-ink/60">
+                          Peserta cukup membawa Surat Tugas dan SPPD yang sudah diunduh otomatis setelah
+                          mendaftar — lihat jadwal kegiatan yang sedang dibuka di bawah ini.
+                      </p>
+                  </div>
+              </div>
 
-            </div>
+          </div>
         </div>
     </section>
 
-   {{-- ============ KEGIATAN TERDEKAT — carousel ============ --}}
+    {{-- ============ KEGIATAN TERDEKAT — carousel & modal ============ --}}
 <section id="kegiatan" class="relative scroll-mt-24 overflow-hidden bg-white py-2 sm:py-4">
     <div class="pointer-events-none absolute -left-16 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-ink-900/[0.05] blur-3xl"></div>
     <div class="pointer-events-none absolute -right-10 bottom-0 h-56 w-56 rounded-full bg-gold/10 blur-3xl"></div>
@@ -224,7 +209,6 @@
                 <h2 class="mt-2 font-display text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">Kegiatan bimtek</h2>
             </div>
 
-            {{-- tombol navigasi carousel, disembunyikan kalau kartu cuma sedikit --}}
             @if ($kegiatanList->count() > 1)
                 <div class="hidden shrink-0 items-center gap-2 sm:flex">
                     <button type="button" id="carousel-prev" class="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-ink-900 transition hover:border-ink-900/30 disabled:pointer-events-none disabled:opacity-30">
@@ -258,7 +242,18 @@
                             default => 'Kuota Tersedia',
                         };
                     @endphp
-                    <div class="group relative w-[85%] shrink-0 snap-start overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-line transition hover:-translate-y-1 hover:shadow-xl hover:shadow-ink-900/[0.08] sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]">
+                    <div 
+                        onclick="bukaModalDetail({
+                            nama: '{{ addslashes($k->nama) }}',
+                            jadwal: '{{ addslashes($k->teks_jadwal) }}',
+                            lokasi: '{{ addslashes($k->lokasi) }}',
+                            kuota: '{{ $k->kuota }}',
+                            terisi: '{{ $k->kuota_terisi }}',
+                            status: '{{ $statusLabel }}',
+                            waktu: '{{ addslashes($k->waktu ?? '-') }}'
+                        })"
+                        class="group relative w-[85%] shrink-0 snap-start overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-line transition hover:-translate-y-1 hover:shadow-xl hover:shadow-ink-900/[0.08] sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] cursor-pointer"
+                    >
                         <div @class([
                             'h-1.5 w-full',
                             'bg-ink-900/20' => $sudahSelesai,
@@ -288,7 +283,6 @@
                             </dl>
                         </div>
 
-                        {{-- perforasi ala tiket kegiatan --}}
                         <div @class(['relative flex items-center px-5 sm:px-6', 'opacity-60' => $sudahSelesai])>
                             <div class="h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-canvas ring-1 ring-line"></div>
                             <div class="flex-1 border-t border-dashed border-line"></div>
@@ -303,21 +297,12 @@
                                     {{ $k->kuota_terisi }} dari {{ $k->kuota }} kuota
                                 @endif
                             </span>
-                            <span @class([
-                                'rounded-full px-3 py-1 text-xs font-semibold',
-                                'bg-ink-900/10 text-ink/50' => $sudahSelesai,
-                                'bg-red-50 text-red-500' => $statusLabel === 'Pendaftaran Ditutup',
-                                'bg-success/10 text-success' => $statusLabel === 'Kuota Tersedia',
-                                'bg-gold/15 text-gold-600' => $statusLabel === 'Segera Ditutup',
-                            ])>
-                                {{ $statusLabel }}
-                            </span>
+                            <span class="text-xs font-semibold text-gold-600 underline">Detail &rarr;</span>
                         </div>
                     </div>
                 @endforeach
             </div>
 
-            {{-- tombol navigasi versi mobile, di bawah carousel --}}
             @if ($kegiatanList->count() > 1)
                 <div class="mt-2 flex items-center justify-center gap-2 sm:hidden">
                     <button type="button" id="carousel-prev-mobile" class="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white text-ink-900 disabled:opacity-30">
@@ -330,9 +315,126 @@
             @endif
         @endif
     </div>
+
+    {{-- ============ MODAL POP-UP DETAIL MINIMALIS ============ --}}
+    <div id="modal-detail-kegiatan" class="fixed inset-0 z-50 hidden items-center justify-center px-4 bg-ink-900/40 backdrop-blur-sm transition-opacity">
+        <div class="relative w-full max-w-lg overflow-hidden rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-line sm:p-8">
+            <!-- Tombol Close -->
+            <button onclick="tutupModalDetail()" class="absolute right-4 top-4 rounded-full p-2 text-ink/40 hover:bg-canvas hover:text-ink-900 transition">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
+            <!-- Header Modal -->
+            <div>
+                <span id="modal-status" class="inline-block rounded-full bg-gold/10 px-3 py-1 font-mono text-xs font-semibold text-gold-600"></span>
+                <h3 id="modal-nama" class="mt-3 font-display text-xl font-bold text-ink-900"></h3>
+            </div>
+
+            <!-- Detail Informasi -->
+            <div class="mt-6 space-y-4 divide-y divide-line/60 text-sm">
+                <div class="flex items-center justify-between pt-3">
+                    <span class="text-ink/60">Tanggal Pelaksanaan</span>
+                    <span id="modal-jadwal" class="font-mono font-medium text-ink-900"></span>
+                </div>
+                <div class="flex items-center justify-between pt-3">
+                    <span class="text-ink/60">Waktu Mulai</span>
+                    <span id="modal-waktu" class="font-mono font-medium text-ink-900"></span>
+                </div>
+                <div class="flex items-center justify-between pt-3">
+                    <span class="text-ink/60">Lokasi / Tempat</span>
+                    <span id="modal-lokasi" class="font-medium text-ink-900 text-right"></span>
+                </div>
+                <div class="flex items-center justify-between pt-3">
+                    <span class="text-ink/60">Kapasitas Peserta</span>
+                    <span id="modal-kuota" class="font-medium text-ink-900"></span>
+                </div>
+            </div>
+
+            <!-- Footer Modal -->
+            <div class="mt-8 flex gap-3">
+                <button onclick="tutupModalDetail()" class="w-full rounded-full border border-line bg-white py-3 text-sm font-semibold text-ink-900 transition hover:bg-canvas">
+                    Tutup
+                </button>
+                <a id="modal-btn-daftar" href="/pendaftaran" class="w-full text-center rounded-full bg-ink-900 py-3 text-sm font-semibold text-canvas transition hover:bg-ink-700 shadow-md">
+                    Daftar Bimtek Ini
+                </a>
+            </div>
+        </div>
+    </div>
 </section>
 
-    {{-- gelombang: transisi putih -> canvas --}}
+<script>
+    (function () {
+        const track = document.getElementById('carousel-track');
+        if (!track) return;
+
+        function geserSatuKartu(arah) {
+            const kartu = track.querySelector(':scope > div');
+            if (!kartu) return;
+            const jarak = kartu.getBoundingClientRect().width + 20;
+            track.scrollBy({ left: arah * jarak, behavior: 'smooth' });
+        }
+
+        ['carousel-prev', 'carousel-prev-mobile'].forEach(id => {
+            document.getElementById(id)?.addEventListener('click', () => geserSatuKartu(-1));
+        });
+        ['carousel-next', 'carousel-next-mobile'].forEach(id => {
+            document.getElementById(id)?.addEventListener('click', () => geserSatuKartu(1));
+        });
+
+        function updateTombol() {
+            const diAwal = track.scrollLeft <= 4;
+            const diAkhir = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+
+            ['carousel-prev', 'carousel-prev-mobile'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.disabled = diAwal;
+            });
+            ['carousel-next', 'carousel-next-mobile'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.disabled = diAkhir;
+            });
+        }
+
+        track.addEventListener('scroll', updateTombol);
+        updateTombol();
+    })();
+
+    function bukaModalDetail(data) {
+        document.getElementById('modal-nama').innerText = data.nama;
+        document.getElementById('modal-status').innerText = data.status;
+        document.getElementById('modal-jadwal').innerText = data.jadwal;
+        document.getElementById('modal-waktu').innerText = data.waktu + ' WIB';
+        document.getElementById('modal-lokasi').innerText = data.lokasi;
+        document.getElementById('modal-kuota').innerText = data.terisi + ' dari ' + data.kuota + ' Kuota';
+
+        // Sembunyikan tombol daftar jika kegiatan sudah ditutup atau selesai
+        const btnDaftar = document.getElementById('modal-btn-daftar');
+        if (data.status === 'Pendaftaran Ditutup' || data.status === 'Selesai') {
+            btnDaftar.style.display = 'none';
+        } else {
+            btnDaftar.style.display = 'block';
+        }
+        
+        const modal = document.getElementById('modal-detail-kegiatan');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function tutupModalDetail() {
+        const modal = document.getElementById('modal-detail-kegiatan');
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+    }
+
+    window.addEventListener('click', function(e) {
+        const modal = document.getElementById('modal-detail-kegiatan');
+        if (e.target === modal) {
+            tutupModalDetail();
+        }
+    });
+</script>
+
     <div class="relative -mb-px h-8 w-full overflow-hidden sm:h-14" aria-hidden="true">
         <svg viewBox="0 0 1440 60" preserveAspectRatio="none" class="absolute bottom-0 h-full w-full">
             <path d="M0,24 C240,54 480,4 720,22 C960,40 1200,52 1440,20 L1440,60 L0,60 Z" class="fill-canvas"></path>
@@ -348,42 +450,34 @@
         <div class="relative mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
             <p class="text-xs font-semibold uppercase tracking-wider text-gold-600">Kenapa SIMBIMTEK</p>
             <h2 class="mt-2 max-w-xl font-display text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
-                Semua yang dibutuhkan peserta, tanpa bolak-balik ke panitia
+                {{ $setting->kenapa_simbimtek_judul }}
             </h2>
 
             <div class="mt-10 grid gap-5 sm:mt-12 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
                 @php
-                    $fitur = [
+                    $iconStyles = [
                         [
-                            'judul' => 'Pendaftaran dengan NIP',
-                            'desc' => 'Isi NIP saja — kalau sudah pernah daftar, data lama otomatis terisi.',
                             'warna' => 'bg-ink-900/10 text-ink-900 group-hover:bg-ink-900 group-hover:text-white',
                             'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M9 8h1M6 3h9l4.5 4.5V19a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2z"/>',
                         ],
                         [
-                            'judul' => 'Cetak Dokumen Otomatis',
-                            'desc' => 'Bukti daftar, SPPD, dan sertifikat tersedia dalam format siap cetak.',
                             'warna' => 'bg-gold/15 text-gold-600 group-hover:bg-gold group-hover:text-white',
                             'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z"/>',
                         ],
                         [
-                            'judul' => 'Absensi QR Code',
-                            'desc' => 'Kehadiran tercatat begitu QR dipindai di lokasi kegiatan.',
                             'warna' => 'bg-success/10 text-success group-hover:bg-success group-hover:text-white',
                             'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.5A.75.75 0 014.5 3.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75v-4.5zM3.75 15a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75V15zM14.25 4.5a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75v-4.5zM14.25 15.75h2.25v2.25h-2.25v-2.25zM17.25 18.75h2.25V21h-2.25v-2.25zM14.25 18.75h.008v.008h-.008v-.008zM17.25 15.75h.008v.008h-.008v-.008zM19.5 15.75h.008v.008h-.008v-.008zM19.5 18.75h.008v.008h-.008v-.008z"/>',
                         ],
                         [
-                            'judul' => 'Cek Status Real-time',
-                            'desc' => 'Lihat status pendaftaran, SPPD, dan sertifikat kapan pun tanpa perlu bertanya.',
                             'warna' => 'bg-[#3E6B8F]/10 text-[#3E6B8F] group-hover:bg-[#3E6B8F] group-hover:text-white',
                             'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>',
                         ],
                     ];
                 @endphp
-                @foreach ($fitur as $f)
+                @foreach ($setting->fitur as $i => $f)
                     <div class="group rounded-2xl border border-line/70 bg-white/70 p-5 shadow-sm backdrop-blur-sm transition hover:shadow-md sm:p-6">
-                        <div @class(['flex h-11 w-11 items-center justify-center rounded-xl transition', $f['warna']])>
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">{!! $f['icon'] !!}</svg>
+                        <div @class(['flex h-11 w-11 items-center justify-center rounded-xl transition', $iconStyles[$i]['warna'] ?? 'bg-ink-900/10 text-ink-900'])>
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">{!! $iconStyles[$i]['icon'] ?? '' !!}</svg>
                         </div>
                         <h3 class="mt-4 font-display text-base font-semibold text-ink-900">{{ $f['judul'] }}</h3>
                         <p class="mt-1.5 text-sm leading-relaxed text-ink/60">{{ $f['desc'] }}</p>
@@ -393,7 +487,6 @@
         </div>
     </section>
 
-    {{-- gelombang: transisi canvas -> putih --}}
     <div class="relative -mb-px h-8 w-full overflow-hidden sm:h-14" aria-hidden="true">
         <svg viewBox="0 0 1440 60" preserveAspectRatio="none" class="absolute bottom-0 h-full w-full">
             <path d="M0,20 C240,48 480,0 720,16 C960,32 1200,56 1440,26 L1440,60 L0,60 Z" class="fill-white"></path>
@@ -418,7 +511,6 @@
     </div>
 
     <div class="relative mt-10 sm:mt-14">
-        {{-- garis penghubung horizontal, tampak di layar besar --}}
         <div class="pointer-events-none absolute left-0 right-0 top-5 hidden border-t-2 border-dashed border-gold/40 lg:block"></div>
 
         <div class="grid gap-5 sm:grid-cols-3 sm:gap-6">
@@ -452,7 +544,6 @@
     </div>
 </section>
 
-    {{-- gelombang: transisi putih -> navy --}}
     <div class="relative -mb-px h-8 w-full overflow-hidden sm:h-14" aria-hidden="true">
         <svg viewBox="0 0 1440 60" preserveAspectRatio="none" class="absolute bottom-0 h-full w-full">
             <path d="M0,26 C240,56 480,6 720,24 C960,42 1200,50 1440,18 L1440,60 L0,60 Z" class="fill-ink-900"></path>
@@ -484,41 +575,3 @@
     </section>
 
 @endsection
-
-<script>
-    (function () {
-        const track = document.getElementById('carousel-track');
-        if (!track) return;
-
-        function geserSatuKartu(arah) {
-            const kartu = track.querySelector(':scope > div');
-            if (!kartu) return;
-            const jarak = kartu.getBoundingClientRect().width + 20; // + gap
-            track.scrollBy({ left: arah * jarak, behavior: 'smooth' });
-        }
-
-        ['carousel-prev', 'carousel-prev-mobile'].forEach(id => {
-            document.getElementById(id)?.addEventListener('click', () => geserSatuKartu(-1));
-        });
-        ['carousel-next', 'carousel-next-mobile'].forEach(id => {
-            document.getElementById(id)?.addEventListener('click', () => geserSatuKartu(1));
-        });
-
-        function updateTombol() {
-            const diAwal = track.scrollLeft <= 4;
-            const diAkhir = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
-
-            ['carousel-prev', 'carousel-prev-mobile'].forEach(id => {
-                const btn = document.getElementById(id);
-                if (btn) btn.disabled = diAwal;
-            });
-            ['carousel-next', 'carousel-next-mobile'].forEach(id => {
-                const btn = document.getElementById(id);
-                if (btn) btn.disabled = diAkhir;
-            });
-        }
-
-        track.addEventListener('scroll', updateTombol);
-        updateTombol();
-    })();
-</script>

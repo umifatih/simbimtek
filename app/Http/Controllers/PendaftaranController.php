@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Kegiatan;
 use App\Models\Peserta;
 use App\Models\Pendaftaran;
+use App\Models\DataMaster;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use PhpOffice\PhpWord\Element\TextRun;
@@ -26,6 +27,68 @@ class PendaftaranController extends Controller
         return view('peserta.daftar', compact('kegiatanList'));
     }
 
+    /**
+     * Dipakai saat suggestion "Unit Kerja" diklik di form pendaftaran.
+     * Cari sekolah di data master (nama sekolah / unit kerja) untuk ditampilkan
+     * sebagai daftar saran ketika peserta mengetik.
+     */
+    public function cariSekolah(Request $request)
+    {
+        $q = trim((string) $request->get('q', ''));
+
+        if (mb_strlen($q) < 2) {
+            return response()->json(['data' => []]);
+        }
+
+        $hasil = DataMaster::where('unit_kerja', 'like', "%{$q}%")
+            ->orWhere('data_sekolah', 'like', "%{$q}%")
+            ->orWhere('desa', 'like', "%{$q}%")
+            ->orderBy('unit_kerja')
+            ->limit(8)
+            ->get(['unit_kerja', 'nama_kepsek', 'nip_kepsek'])
+            ->map(fn ($s) => [
+                'unit_kerja'  => $s->unit_kerja,
+                'nama_kepsek' => $s->nama_kepsek,
+                'nip_kepsek'  => $s->nip_kepsek,
+            ]);
+
+        return response()->json(['data' => $hasil]);
+    }
+
+    /**
+     * Pencarian saran peserta yang PERNAH mendaftar — bisa lewat NIP maupun Nama.
+     * Dipakai di kolom "NIP" dan "Nama dan Gelar": peserta ketik sebagian NIP atau
+     * sebagian nama, muncul daftar saran, begitu diklik seluruh data diisi otomatis
+     * lewat cariNip() di bawah (karena NIP dari saran ini sudah pasti unik).
+     */
+    public function cariPeserta(Request $request)
+    {
+        $q = trim((string) $request->get('q', ''));
+
+        if (mb_strlen($q) < 3) {
+            return response()->json(['data' => []]);
+        }
+
+        $hasil = Peserta::where('nip', 'like', "%{$q}%")
+            ->orWhere('nama_gelar', 'like', "%{$q}%")
+            ->orderBy('nama_gelar')
+            ->limit(8)
+            ->get(['nip', 'nama_gelar', 'unit_kerja'])
+            ->map(fn ($p) => [
+                'nip'        => $p->nip,
+                'nama_gelar' => $p->nama_gelar,
+                'unit_kerja' => $p->unit_kerja,
+            ]);
+
+        return response()->json(['data' => $hasil]);
+    }
+
+    /**
+     * Ambil data lengkap satu peserta berdasarkan NIP persis (exact match).
+     * Dipanggil otomatis begitu peserta mengetik NIP penuh, ATAU begitu peserta
+     * memilih salah satu saran dari cariPeserta() di atas (baik saran itu muncul
+     * dari pencarian NIP maupun pencarian Nama).
+     */
     public function cariNip(string $nip)
     {
         $peserta = Peserta::where('nip', $nip)->first();
@@ -46,6 +109,7 @@ class PendaftaranController extends Controller
                 'email'             => $peserta->email,
                 'nama_gelar_kepsek' => $peserta->nama_gelar_kepsek,
                 'nip_kepsek'        => $peserta->nip_kepsek,
+                'nip'               => $peserta->nip,
             ],
         ]);
     }
@@ -60,12 +124,19 @@ class PendaftaranController extends Controller
             'pangkat_golongan'     => 'required|string|max:100',
             'tempat_lahir'         => 'required|string|max:100',
             'tanggal_lahir'        => 'required|date',
-            'jabatan'              => 'required|in:Bendahara BOSP,Operator BOSP',
+            'jabatan'              => 'required|in:Bendahara BOSP,Operator BOSP,lainnya',
+            'jabatan_lainnya'      => 'nullable|string|max:100|required_if:jabatan,lainnya',
             'email'                => 'required|email|max:255',
             'nama_gelar_kepsek'    => 'required|string|max:255',
             'nip_kepsek'           => 'nullable|string|max:30',
             'setuju'               => 'required',
         ]);
+
+        // Kalau peserta pilih "Lainnya", ganti nilai jabatan dengan teks yang mereka tulis
+        if ($validated['jabatan'] === 'lainnya') {
+            $validated['jabatan'] = $validated['jabatan_lainnya'];
+        }
+        unset($validated['jabatan_lainnya']);
 
         $peserta = Peserta::updateOrCreate(
             ['nip' => $validated['nip']],

@@ -32,7 +32,7 @@
                 @error('logo') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
             </div>
 
-            <div>
+                <div>
                 <label class="block text-sm font-semibold text-ink-900">Nama Aplikasi</label>
                 <input type="text" name="nama_aplikasi" value="{{ old('nama_aplikasi', $setting->nama_aplikasi) }}"
                        class="mt-1.5 w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-ink-900/30 focus:outline-none focus:ring-2 focus:ring-gold/30">

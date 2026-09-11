@@ -46,6 +46,11 @@ class Kegiatan extends Model
         return $this->pendaftaran()->count();
     }
 
+    public function materiKegiatan()
+    {
+        return $this->hasMany(MateriKegiatan::class)->orderBy('urutan');
+    }
+
     public function getTeksJadwalAttribute(): string
     {
         if (!$this->tanggal_mulai || !$this->tanggal_selesai) {

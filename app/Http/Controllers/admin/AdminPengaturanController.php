@@ -23,6 +23,8 @@ class AdminPengaturanController extends Controller
         $data = $request->validate([
             'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,svg,webp', 'max:1024'],
             'nama_aplikasi' => ['required', 'string', 'max:100'],
+            'nama_ketua_k3s' => ['nullable', 'string', 'max:100'],
+            'nip_ketua_k3s' => ['nullable', 'string', 'max:50'],
             'tagline' => ['required', 'string', 'max:255'],
             'deskripsi' => ['required', 'string'],
             'tentang_program_judul' => ['required', 'string', 'max:255'],

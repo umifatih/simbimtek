@@ -81,7 +81,11 @@ Route::prefix('admin')->group(function () {
 
     // [BARU] Sertifikat — daftar peserta siap cetak per kegiatan
     Route::get('/sertifikat', [AdminSertifikatController::class, 'index'])->name('admin.sertifikat.index');
-
+    Route::patch('sertifikat/ketua', [AdminSertifikatController::class, 'updateKetua'])
+    ->name('admin.sertifikat.ketua.update');
+    Route::post('/sertifikat/materi', [AdminSertifikatController::class, 'storeMateri'])->name('admin.sertifikat.materi.store');
+Route::delete('/sertifikat/materi/{materi}', [AdminSertifikatController::class, 'destroyMateri'])->name('admin.sertifikat.materi.destroy');
+    
     // [BARU] Pengaturan beranda / identitas situs
     Route::get('/pengaturan', [AdminPengaturanController::class, 'edit'])->name('admin.pengaturan.edit');
     Route::post('/pengaturan', [AdminPengaturanController::class, 'update'])->name('admin.pengaturan.update');

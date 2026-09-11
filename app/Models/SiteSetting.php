@@ -11,6 +11,8 @@ class SiteSetting extends Model
     protected $fillable = [
         'logo_path',
         'nama_aplikasi',
+        'nama_ketua_k3s',
+        'nip_ketua_k3s',
         'tagline',
         'deskripsi',
         'tentang_program_judul',

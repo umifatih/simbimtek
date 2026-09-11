@@ -213,6 +213,15 @@ class PendaftaranController extends Controller
         $template->setValue('nama_ks', $pendaftaran->nama_gelar_kepsek);
         $template->setValue('nip_ks', $pendaftaran->nip_kepsek ?? '-');
         $template->setValue('email', $pendaftaran->email ?? '-');
+        $template->setValue('pangkat_golongan', $pendaftaran->peserta->pangkat_golongan ?? '-');
+        $template->setValue('tempat_lahir', $pendaftaran->peserta->tempat_lahir ?? '-');
+        $template->setValue(
+            'tanggal_lahir',
+            optional($pendaftaran->peserta->tanggal_lahir)->translatedFormat('d F Y') ?? '-'
+        );
+        $pengaturan = \App\Models\SiteSetting::current();
+        $template->setValue('nama_ketua_k3s', $pengaturan->nama_ketua_k3s ?? '-');
+        $template->setValue('nip_ketua_k3s', $pengaturan->nip_ketua_k3s ?? '-');
 
         $template->setValue('nama_kegiatan', $kegiatan->nama);
         $template->setValue('hari_tanggal', $kegiatan->hari_tanggal);
@@ -267,6 +276,7 @@ class PendaftaranController extends Controller
 
         if ($jenis === 'sertifikat') {
             $template->setValue('tanggal_selesai', $kegiatan->tanggal_selesai->translatedFormat('d F Y'));
+            $this->isiMateriKegiatan($template, $kegiatan);
         }
 
         $namaFile = $jenis . '-' . Str::slug($pendaftaran->nama_gelar) . '.docx';
@@ -289,7 +299,31 @@ class PendaftaranController extends Controller
 
         return response()->download($pathSementara, $namaFile)->deleteFileAfterSend(true);
     }
+    private function isiMateriKegiatan(TemplateProcessor $template, Kegiatan $kegiatan): void
+{
+    $materiList = \App\Models\MateriKegiatan::where('kegiatan_id', $kegiatan->id)
+        ->orderBy('urutan')
+        ->get();
 
+    if ($materiList->isEmpty()) {
+        return;
+    }
+
+    $template->cloneRow('nama_materi', $materiList->count());
+
+    $totalJp = 0;
+
+    foreach ($materiList as $i => $materi) {
+        $ke = $i + 1;
+        $totalJp += $materi->jumlah_jp;
+
+        $template->setValue("no_materi#{$ke}", $ke);
+        $template->setValue("nama_materi#{$ke}", $materi->nama_materi);
+        $template->setValue("waktu_materi#{$ke}", $materi->jumlah_jp . ' jpl'); // sesuaikan format kalau perlu
+    }
+
+    $template->setValue('total_jp', $totalJp . ' jpl');
+}
     private function isiRincianPerjalanan(TemplateProcessor $template, Kegiatan $kegiatan, Pendaftaran $pendaftaran): void
     {
         $mulai = $kegiatan->tanggal_mulai;

@@ -14,6 +14,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+    [x-cloak] { display: none !important; }
+</style>
 </head>
 <body class="bg-canvas text-ink font-body antialiased">
 
@@ -116,5 +119,6 @@
     </script>
 
     @yield('scripts')
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>

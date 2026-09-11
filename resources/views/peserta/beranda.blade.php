@@ -17,7 +17,7 @@
                 <div class="lg:col-span-7">
                     <span class="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-ink-700 shadow-sm">
                         <span class="h-1.5 w-1.5 rounded-full bg-gold"></span>
-                        Sistem Informasi Manajemen Bimtek
+                        Sistem Informasi Manajemen Bimtek Profetika
                     </span>
 
                     <h1 class="mt-5 font-display text-[2rem] font-bold leading-[1.15] tracking-tight text-ink-900 sm:mt-6 sm:text-4xl md:text-5xl lg:text-[3.4rem] lg:leading-[1.1]">

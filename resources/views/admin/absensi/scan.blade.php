@@ -31,7 +31,6 @@
 
                 <div class="flex items-center gap-2">
                     @if ($kegiatan)
-                        <!-- [PERBAIKAN] Pemanggilan route export -->
                         <a
                             href="{{ route('admin.absensi.export', $kegiatan) }}"
                             class="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3.5 py-2 text-xs font-semibold text-ink-900 transition hover:border-ink-900/30"
@@ -75,7 +74,7 @@
                 <select id="pilih-tanggal" class="w-full rounded-xl border border-line bg-canvas px-4 py-2.5 text-sm font-semibold text-ink-900 outline-none focus:border-ink-900 focus:ring-1 focus:ring-ink-900" {{ $kegiatan ? '' : 'disabled' }}>
                     @if(isset($jadwal_harian) && count($jadwal_harian) > 0)
                         @foreach ($jadwal_harian as $tanggal => $label)
-                            <option value="{{ $tanggal }}" {{ $tanggal === now()->toDateString() ? 'selected' : '' }}>{{ $label }}</option>
+                            <option value="{{ $tanggal }}" {{ $tanggal === ($hariIni ?? date('Y-m-d')) ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     @else
                         <option value="{{ date('Y-m-d') }}">Hari Ini ({{ date('d M Y') }})</option>
@@ -85,21 +84,31 @@
 
             {{-- Kamera Scanner --}}
             <div class="rounded-2xl border border-line bg-white p-4 shadow-sm">
-                @if ($bisaAbsen)
+                @if (isset($statusAbsen) && $statusAbsen === 'buka')
                     <div class="overflow-hidden rounded-xl border border-line bg-black">
                         <div id="qr-reader" class="mx-auto w-full"></div>
                     </div>
                     <p id="camera-hint" class="mt-3 text-center text-xs text-ink/50">
-                        {{ $kegiatan ? 'Arahkan kamera ke QR peserta' : 'Belum ada kegiatan untuk diabsen' }}
+                        Arahkan kamera ke QR peserta
                     </p>
+                @elseif (isset($statusAbsen) && $statusAbsen === 'belum_mulai')
+                    <div class="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-line bg-canvas py-10 text-center">
+                        <svg class="h-8 w-8 text-ink/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-sm font-semibold text-ink-900">Kegiatan Belum Dimulai</p>
+                        <p class="max-w-[220px] text-xs text-ink/50">
+                            Absensi akan otomatis terbuka saat tanggal kegiatan sudah masuk (sesuai jam WIB).
+                        </p>
+                    </div>
                 @else
                     <div class="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-line bg-canvas py-10 text-center">
                         <svg class="h-8 w-8 text-ink/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                         </svg>
-                        <p class="text-sm font-semibold text-ink-900">Absensi sudah ditutup</p>
-                        <p class="max-w-[220px] text-xs text-ink/50">
-                            Kegiatan ini sudah lewat tanggal selesainya. Data kehadiran yang sudah tercatat tetap bisa dilihat dan diunduh.
+                        <p class="text-sm font-semibold text-ink-900">Absensi Tidak Tersedia</p>
+                        <p class="max-w-[230px] text-xs text-ink/50">
+                            Kegiatan ini sudah lewat atau belum terlaksana. Data kehadiran yang tercatat tetap bisa dilihat dan diunduh.
                         </p>
                     </div>
                 @endif
@@ -126,11 +135,9 @@
         let jumlah = 0;
         let sedangProses = false;
 
-        // [PERBAIKAN] Pemanggilan route riwayat
         const urlRiwayat = @json($kegiatan ? route('admin.absensi.riwayat', $kegiatan) : null);
 
         function pilihKegiatan(id) {
-            // [PERBAIKAN] Mengarah ke route halaman utama (GET)
             window.location.href = '{{ route('admin.absensi.index') }}?kegiatan_id=' + id;
         }
 
@@ -214,7 +221,6 @@
             const tanggalTerpilih = tanggalInput.value;
 
             try {
-                // [PERBAIKAN] Mengarah ke route khusus POST (Scanner API)
                 const res = await fetch('{{ route('admin.absensi.process') }}', {
                     method: 'POST',
                     headers: {
@@ -244,7 +250,7 @@
             setTimeout(() => { sedangProses = false; }, 2000);
         }
 
-        @if($bisaAbsen)
+        @if(isset($statusAbsen) && $statusAbsen === 'buka')
         const qr = new Html5Qrcode('qr-reader');
         qr.start(
             { facingMode: 'environment' },

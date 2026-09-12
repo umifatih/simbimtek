@@ -77,6 +77,9 @@
                     $stepAktif = $stepAktif === false ? 0 : $stepAktif;
                     $sertifikatSiap = $pendaftaran->absensiLengkap();
                     $progres = $pendaftaran->progresAbsensi();
+                    if ($sertifikatSiap) {
+                        $stepAktif = count($tahapan); 
+                    }
                 @endphp
 
                 <div class="mt-6 rounded-2xl border border-line p-5 sm:mt-0 sm:p-7">

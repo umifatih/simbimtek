@@ -173,7 +173,7 @@ class PendaftaranController extends Controller
         ]);
 
         return redirect()->route('cek-status', ['nomor_pendaftaran' => $pendaftaran->nomor_pendaftaran])
-                         ->with('success', true);
+                       ->with('success', true);
     }
 
     public function unduh(Pendaftaran $pendaftaran, string $jenis)
@@ -219,6 +219,14 @@ class PendaftaranController extends Controller
             'tanggal_lahir',
             optional($pendaftaran->peserta->tanggal_lahir)->translatedFormat('d F Y') ?? '-'
         );
+
+        // Mengisi tanggal cetak / tanggal pendaftaran format Indonesia (WIB)
+        $tanggalPendaftaran = $pendaftaran->created_at 
+            ? $pendaftaran->created_at->timezone('Asia/Jakarta')->translatedFormat('d F Y') 
+            : now('Asia/Jakarta')->translatedFormat('d F Y');
+        
+        $template->setValue('tanggal_cetak', $tanggalPendaftaran);
+
         $pengaturan = \App\Models\SiteSetting::current();
         $template->setValue('nama_ketua_k3s', $pengaturan->nama_ketua_k3s ?? '-');
         $template->setValue('nip_ketua_k3s', $pengaturan->nip_ketua_k3s ?? '-');
@@ -248,7 +256,6 @@ class PendaftaranController extends Controller
 
             $qrPath = $folderQr . '/qr_' . $pendaftaran->id . '.png';
 
-            // [PERBAIKAN] Menggunakan konstruktor baru Endroid v4/v5 tanpa memanggil setSize()
             $qrCode = new QrCode(
                 data: $pendaftaran->token_kehadiran,
                 encoding: new Encoding('UTF-8'),
@@ -299,31 +306,33 @@ class PendaftaranController extends Controller
 
         return response()->download($pathSementara, $namaFile)->deleteFileAfterSend(true);
     }
+    
     private function isiMateriKegiatan(TemplateProcessor $template, Kegiatan $kegiatan): void
-{
-    $materiList = \App\Models\MateriKegiatan::where('kegiatan_id', $kegiatan->id)
-        ->orderBy('urutan')
-        ->get();
+    {
+        $materiList = \App\Models\MateriKegiatan::where('kegiatan_id', $kegiatan->id)
+            ->orderBy('urutan')
+            ->get();
 
-    if ($materiList->isEmpty()) {
-        return;
+        if ($materiList->isEmpty()) {
+            return;
+        }
+
+        $template->cloneRow('nama_materi', $materiList->count());
+
+        $totalJp = 0;
+
+        foreach ($materiList as $i => $materi) {
+            $ke = $i + 1;
+            $totalJp += $materi->jumlah_jp;
+
+            $template->setValue("no_materi#{$ke}", $ke);
+            $template->setValue("nama_materi#{$ke}", $materi->nama_materi);
+            $template->setValue("waktu_materi#{$ke}", $materi->jumlah_jp . ' jpl');
+        }
+
+        $template->setValue('total_jp', $totalJp . ' jpl');
     }
 
-    $template->cloneRow('nama_materi', $materiList->count());
-
-    $totalJp = 0;
-
-    foreach ($materiList as $i => $materi) {
-        $ke = $i + 1;
-        $totalJp += $materi->jumlah_jp;
-
-        $template->setValue("no_materi#{$ke}", $ke);
-        $template->setValue("nama_materi#{$ke}", $materi->nama_materi);
-        $template->setValue("waktu_materi#{$ke}", $materi->jumlah_jp . ' jpl'); // sesuaikan format kalau perlu
-    }
-
-    $template->setValue('total_jp', $totalJp . ' jpl');
-}
     private function isiRincianPerjalanan(TemplateProcessor $template, Kegiatan $kegiatan, Pendaftaran $pendaftaran): void
     {
         $mulai = $kegiatan->tanggal_mulai;

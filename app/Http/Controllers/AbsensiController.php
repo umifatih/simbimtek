@@ -13,9 +13,6 @@ class AbsensiController extends Controller
 {
     public function indexScan(Request $request)
     {
-        // Semua kegiatan tetap ditampilkan (termasuk yang sudah lewat) supaya
-        // riwayat kehadiran lama tetap bisa dilihat & diunduh. Yang dibatasi
-        // tanggal cuma proses SCAN QR-nya (lihat $bisaAbsen di bawah & di view).
         $daftarKegiatan = Kegiatan::orderByDesc('tanggal_mulai')->get();
 
         $kegiatan = null;
@@ -25,23 +22,21 @@ class AbsensiController extends Controller
             $kegiatan = $daftarKegiatan->firstWhere('id', (int) $kegiatanIdDipilih);
         }
 
-        // Kalau admin belum pilih apa-apa: prioritas 1) yang sedang berlangsung,
-        // 2) yang paling dekat akan datang, 3) yang paling baru saja selesai.
         if (! $kegiatan) {
             $kegiatan = $daftarKegiatan->first(
-                fn ($k) => $k->tanggal_mulai->lte(now()) && $k->tanggal_selesai->gte(now())
+                fn ($k) => $k->tanggal_mulai->lte(now('Asia/Jakarta')) && $k->tanggal_selesai->gte(now('Asia/Jakarta'))
             );
 
             if (! $kegiatan) {
                 $kegiatan = $daftarKegiatan
-                    ->filter(fn ($k) => $k->tanggal_mulai->gt(now()))
+                    ->filter(fn ($k) => $k->tanggal_mulai->gt(now('Asia/Jakarta')))
                     ->sortBy('tanggal_mulai')
                     ->first();
             }
 
             if (! $kegiatan) {
                 $kegiatan = $daftarKegiatan
-                    ->filter(fn ($k) => $k->tanggal_selesai->lt(now()))
+                    ->filter(fn ($k) => $k->tanggal_selesai->lt(now('Asia/Jakarta')))
                     ->sortByDesc('tanggal_selesai')
                     ->first();
             }
@@ -49,14 +44,24 @@ class AbsensiController extends Controller
             $kegiatan = $kegiatan ?? $daftarKegiatan->first();
         }
 
-        // Absen (scan QR) cuma boleh sampai tanggal_selesai — H+1 sudah terkunci.
-        // Riwayat & unduhan tetap jalan walau $bisaAbsen false.
-        $bisaAbsen = $kegiatan
-            ? now()->toDateString() <= $kegiatan->tanggal_selesai->toDateString()
-            : false;
+        // [PERBAIKAN]: Cek status kegiatan (buka, belum_mulai, atau tutup) menggunakan WIB
+        $statusAbsen = 'tutup';
+        $hariIni = now('Asia/Jakarta')->toDateString();
+
+        if ($kegiatan) {
+            $tglMulai = $kegiatan->tanggal_mulai->toDateString();
+            $tglSelesai = $kegiatan->tanggal_selesai->toDateString();
+
+            if ($hariIni < $tglMulai) {
+                $statusAbsen = 'belum_mulai';
+            } elseif ($hariIni > $tglSelesai) {
+                $statusAbsen = 'tutup';
+            } else {
+                $statusAbsen = 'buka';
+            }
+        }
 
         $jadwal_harian = [];
-
         if ($kegiatan) {
             $periode = CarbonPeriod::create($kegiatan->tanggal_mulai, $kegiatan->tanggal_selesai);
             $hariKe = 1;
@@ -66,7 +71,7 @@ class AbsensiController extends Controller
             }
         }
 
-        return view('admin.absensi.scan', compact('kegiatan', 'jadwal_harian', 'daftarKegiatan', 'bisaAbsen'));
+        return view('admin.absensi.scan', compact('kegiatan', 'jadwal_harian', 'daftarKegiatan', 'statusAbsen', 'hariIni'));
     }
 
     public function riwayat(Request $request, Kegiatan $kegiatan)
@@ -81,7 +86,7 @@ class AbsensiController extends Controller
             ->map(fn ($a) => [
                 'nama'       => $a->pendaftaran->nama_gelar,
                 'unit_kerja' => $a->pendaftaran->unit_kerja,
-                'jam'        => $a->waktu_scan->format('H:i'),
+                'jam'        => optional($a->waktu_scan)->format('H:i'),
             ]);
 
         return response()->json($data);
@@ -107,6 +112,14 @@ class AbsensiController extends Controller
 
         $kegiatan = $pendaftaran->kegiatan;
         $tanggalDipilih = $validated['tanggal'];
+        $hariIni = now()->toDateString();
+
+        if ($hariIni < $tanggalDipilih) {
+            return response()->json([
+                'status' => 'gagal',
+                'pesan'  => 'Belum bisa absen! Jadwal absensi untuk hari ini belum dimulai.'
+            ]);
+        }
 
         if ($tanggalDipilih < $kegiatan->tanggal_mulai->toDateString() || $tanggalDipilih > $kegiatan->tanggal_selesai->toDateString()) {
             return response()->json([
@@ -115,9 +128,7 @@ class AbsensiController extends Controller
             ]);
         }
 
-        // Kunci keras di sisi server juga: begitu H+1 dari tanggal_selesai, scan ditolak,
-        // biar tidak bisa diakali lewat request langsung ke endpoint ini.
-        if (now()->toDateString() > $kegiatan->tanggal_selesai->toDateString()) {
+        if ($hariIni > $kegiatan->tanggal_selesai->toDateString()) {
             return response()->json([
                 'status' => 'gagal',
                 'pesan'  => 'Absensi untuk kegiatan ini sudah ditutup.'
@@ -156,16 +167,11 @@ class AbsensiController extends Controller
         ]);
     }
 
-    /**
-     * Unduh rekap kehadiran satu kegiatan sebagai CSV (bisa langsung dibuka di Excel).
-     * Kalau query ?tanggal=YYYY-MM-DD disertakan, hasilnya difilter untuk tanggal itu saja;
-     * kalau tidak, semua hari kegiatan ikut terunduh.
-     */
     public function exportExcel(Request $request, Kegiatan $kegiatan)
     {
         $tanggal = $request->query('tanggal');
 
-        $query = Absensi::with('pendaftaran')
+        $query = Absensi::with(['pendaftaran.peserta'])
             ->whereHas('pendaftaran', fn ($q) => $q->where('kegiatan_id', $kegiatan->id));
 
         if ($tanggal) {
@@ -174,34 +180,56 @@ class AbsensiController extends Controller
 
         $data = $query->orderBy('tanggal_hadir')->orderBy('waktu_scan')->get();
 
-        $namaFile = 'absensi-' . Str::slug($kegiatan->nama) . ($tanggal ? '-' . $tanggal : '') . '.csv';
+        $namaFile = 'Data_Kehadiran_' . Str::slug($kegiatan->nama) . ($tanggal ? '_' . $tanggal : '') . '.xls';
+
+        $html = '<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body>';
+        $html .= '<table border="1" style="border-collapse: collapse; font-family: Arial, sans-serif;">';
+        
+        $html .= '<thead>';
+        $html .= '<tr><th colspan="10" style="font-size: 16px; font-weight: bold; text-align: center; background-color: #f3f4f6; padding: 10px;">Laporan Kehadiran Peserta - ' . htmlspecialchars($kegiatan->nama) . '</th></tr>';
+        
+        if ($tanggal) {
+            $tanggalFormat = \Carbon\Carbon::parse($tanggal)->translatedFormat('d F Y');
+            $html .= '<tr><th colspan="10" style="text-align: center; background-color: #f3f4f6; padding: 5px;">Tanggal Absensi: ' . $tanggalFormat . '</th></tr>';
+        }
+        
+        $html .= '<tr><th colspan="10"></th></tr>';
 
         $headers = [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $namaFile . '"',
+            'No', 'No. Pendaftaran', 'Nama dan Gelar', 'NIP', 'Pangkat / Golongan', 
+            'Jabatan', 'Unit Kerja', 'Email', 'Tanggal Hadir', 'Waktu Scan (WIB)'
         ];
 
-        return response()->streamDownload(function () use ($data) {
-            $handle = fopen('php://output', 'w');
+        $html .= '<tr>';
+        foreach ($headers as $head) {
+            $html .= '<th style="background-color: #0F2A43; color: #ffffff; font-weight: bold; text-align: center; padding: 8px;">' . $head . '</th>';
+        }
+        $html .= '</tr>';
+        $html .= '</thead>';
+        
+        $html .= '<tbody>';
+        foreach ($data as $i => $a) {
+            $peserta = $a->pendaftaran->peserta;
 
-            // BOM biar karakter (é, spasi khusus, dll) tampil benar saat dibuka di Excel
-            fwrite($handle, "\xEF\xBB\xBF");
+            $html .= '<tr>';
+            $html .= '<td style="text-align: center; padding: 5px;">' . ($i + 1) . '</td>';
+            $html .= '<td style="padding: 5px;">' . htmlspecialchars($a->pendaftaran->nomor_pendaftaran) . '</td>';
+            $html .= '<td style="padding: 5px;">' . htmlspecialchars($a->pendaftaran->nama_gelar) . '</td>';
+            $html .= '<td style="mso-number-format:\'\@\'; padding: 5px;">' . htmlspecialchars($a->pendaftaran->nip) . '</td>';
+            $html .= '<td style="padding: 5px;">' . htmlspecialchars($peserta->pangkat_golongan ?? '-') . '</td>';
+            $html .= '<td style="padding: 5px;">' . htmlspecialchars($a->pendaftaran->jabatan) . '</td>';
+            $html .= '<td style="padding: 5px;">' . htmlspecialchars($a->pendaftaran->unit_kerja) . '</td>';
+            $html .= '<td style="padding: 5px;">' . htmlspecialchars($peserta->email ?? '-') . '</td>';
+            $html .= '<td style="text-align: center; padding: 5px;">' . optional($a->tanggal_hadir)->translatedFormat('d F Y') . '</td>';
+            
+            // Format jam langsung tanpa konversi timezone tambahan agar konsisten dengan tampilan web
+            $html .= '<td style="text-align: center; padding: 5px;">' . optional($a->waktu_scan)->format('H:i:s') . '</td>';
+            $html .= '</tr>';
+        }
+        $html .= '</tbody></table></body></html>';
 
-            fputcsv($handle, ['No', 'Nama', 'NIP', 'Unit Kerja', 'Jabatan', 'Tanggal Hadir', 'Jam Absen']);
-
-            foreach ($data as $i => $a) {
-                fputcsv($handle, [
-                    $i + 1,
-                    $a->pendaftaran->nama_gelar,
-                    $a->pendaftaran->nip,
-                    $a->pendaftaran->unit_kerja,
-                    $a->pendaftaran->jabatan,
-                    optional($a->tanggal_hadir)->translatedFormat('d F Y'),
-                    optional($a->waktu_scan)->format('H:i'),
-                ]);
-            }
-
-            fclose($handle);
-        }, $namaFile, $headers);
+        return response($html)
+            ->header('Content-Type', 'application/vnd.ms-excel')
+            ->header('Content-Disposition', 'attachment; filename="' . $namaFile . '"');
     }
 }

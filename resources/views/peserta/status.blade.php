@@ -112,6 +112,7 @@
                         </div>
                         <div>
                             <dt class="text-xs font-medium uppercase tracking-wide text-ink/40">Jadwal</dt>
+                            {{-- PERBAIKAN: Memanggil teks_jadwal yang benar --}}
                             <dd class="mt-1 font-mono text-sm text-ink-900">{{ $pendaftaran->kegiatan->teks_jadwal }}</dd>
                         </div>
                     </dl>

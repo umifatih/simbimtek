@@ -4,7 +4,12 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
+<<<<<<< HEAD
     "content-hash": "bf0939576543115de0e19bf6a720d58d",
+=======
+    "content-hash": "6535ec8e889c24a7b5e9418d23df9342",
+    "content-hash": "301043b064d77bd8389630c8b7a20926",
+>>>>>>> 71d6050e5ca59a64fadaca04f69c102c4ae8ad0b
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -307,6 +312,33 @@
             "autoload": {
                 "psr-4": {
                     "Composer\\Pcre\\": "src"
+<<<<<<< HEAD
+=======
+            "name": "dasprid/enum",
+            "version": "1.0.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/DASPRiD/Enum.git",
+                "reference": "b5874fa9ed0043116c72162ec7f4fb50e02e7cce"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/DASPRiD/Enum/zipball/b5874fa9ed0043116c72162ec7f4fb50e02e7cce",
+                "reference": "b5874fa9ed0043116c72162ec7f4fb50e02e7cce",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1 <9.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^7 || ^8 || ^9 || ^10 || ^11",
+                "squizlabs/php_codesniffer": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "DASPRiD\\Enum\\": "src/"
+>>>>>>> 71d6050e5ca59a64fadaca04f69c102c4ae8ad0b
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -342,6 +374,7 @@
                 }
             ],
             "time": "2026-06-07T11:47:49+00:00"
+<<<<<<< HEAD
         },
         {
             "name": "dasprid/enum",
@@ -372,6 +405,8 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
+=======
+>>>>>>> 71d6050e5ca59a64fadaca04f69c102c4ae8ad0b
                 "BSD-2-Clause"
             ],
             "authors": [

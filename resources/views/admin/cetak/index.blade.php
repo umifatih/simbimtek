@@ -11,9 +11,11 @@
     <div class="mt-5 max-w-sm">
         <label class="text-sm font-semibold text-ink-900">Kegiatan</label>
         <select id="pilih-kegiatan" class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
-            <option value="1">Bimtek Pengelolaan Keuangan Desa — 14–16 Sep 2026</option>
-            <option value="2">Bimtek Digitalisasi Pelayanan Publik — 22–24 Sep 2026</option>
-            <option value="3">Bimtek Penyusunan Laporan Kinerja — 2–3 Okt 2026</option>
+            @forelse ($daftarKegiatan as $k)
+                <option value="{{ $k->id }}">{{ $k->nama }} — {{ $k->hari_tanggal }}</option>
+            @empty
+                <option value="" disabled selected>Belum ada kegiatan</option>
+            @endforelse
         </select>
     </div>
 

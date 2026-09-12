@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\DataMasterController;
 use App\Http\Controllers\Admin\AdminPengaturanController; // [BARU]
 use App\Http\Controllers\Admin\AdminSertifikatController; // [BARU]
+use App\Http\Controllers\Admin\AdminCetakController;
 
 /*
 |--------------------------------------------------------------------------
@@ -76,17 +77,16 @@ Route::prefix('admin')->group(function () {
     Route::get('/absensi/{kegiatan}/export', [AbsensiController::class, 'exportExcel'])->name('admin.absensi.export');
 
 
-    Route::get('/cetak', fn () => view('admin.cetak.index'))->name('admin.cetak.index');
-    Route::get('/cetak/daftar-peserta', fn () => view('admin.cetak.daftar-peserta'))->name('admin.cetak.daftar-peserta');
-    Route::get('/cetak/daftar-hadir', fn () => view('admin.cetak.daftar-hadir'))->name('admin.cetak.daftar-hadir');
-    Route::get('/cetak/konsumsi-atk', fn () => view('admin.cetak.konsumsi-atk'))->name('admin.cetak.konsumsi-atk');
-
-    // [BARU] Sertifikat — daftar peserta siap cetak per kegiatan
+    Route::get('/cetak', [AdminCetakController::class, 'index'])->name('admin.cetak.index');
+    Route::get('/cetak/daftar-peserta', [AdminCetakController::class, 'unduhDaftarPeserta'])->name('admin.cetak.daftar-peserta');
+    Route::get('/cetak/daftar-hadir', [AdminCetakController::class, 'unduhDaftarHadir'])->name('admin.cetak.daftar-hadir');
+    Route::get('/cetak/konsumsi-atk', [AdminCetakController::class, 'unduhKonsumsiAtk'])->name('admin.cetak.konsumsi-atk');
+        // [BARU] Sertifikat — daftar peserta siap cetak per kegiatan
     Route::get('/sertifikat', [AdminSertifikatController::class, 'index'])->name('admin.sertifikat.index');
     Route::patch('sertifikat/ketua', [AdminSertifikatController::class, 'updateKetua'])
     ->name('admin.sertifikat.ketua.update');
     Route::post('/sertifikat/materi', [AdminSertifikatController::class, 'storeMateri'])->name('admin.sertifikat.materi.store');
-Route::delete('/sertifikat/materi/{materi}', [AdminSertifikatController::class, 'destroyMateri'])->name('admin.sertifikat.materi.destroy');
+    Route::delete('/sertifikat/materi/{materi}', [AdminSertifikatController::class, 'destroyMateri'])->name('admin.sertifikat.materi.destroy');
     
     // [BARU] Pengaturan beranda / identitas situs
     Route::get('/pengaturan', [AdminPengaturanController::class, 'edit'])->name('admin.pengaturan.edit');

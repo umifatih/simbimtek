@@ -1,32 +1,27 @@
-{{-- resources/views/admin/cetak/daftar-peserta.blade.php --}}
 @extends('layouts.print')
 
 @section('title', 'Daftar Peserta')
 
 @section('content')
 
-    @php
-        $kegiatan = ['nama' => 'Bimtek Pengelolaan Keuangan Desa', 'tanggal' => '14–16 Sep 2026', 'lokasi' => 'Aula Diklat, Purbalingga'];
-        $peserta = [
-            ['no' => 1, 'nama' => 'Siti Aminah, S.Pd.', 'nip' => '198501012010012001', 'unit' => 'SD NEGERI 1 MANDIRAJA KULON', 'jabatan' => 'Bendahara BOSP'],
-            ['no' => 2, 'nama' => 'Budi Santoso, S.Kom.', 'nip' => '198712052012011003', 'unit' => 'SMP NEGERI 2 PURBALINGGA', 'jabatan' => 'Operator BOSP'],
-            ['no' => 3, 'nama' => 'Rina Wulandari, S.Pd.', 'nip' => '199003212014022004', 'unit' => 'SD NEGERI 3 KALIMANAH', 'jabatan' => 'Bendahara BOSP'],
-        ];
-    @endphp
-
-    {{-- ===== KOP SURAT ===== --}}
     <div class="flex items-center gap-4 border-b-2 border-ink-900 pb-4">
-        <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-ink-900 font-display text-lg font-bold text-canvas">SB</span>
+        @if ($setting->logo_url)
+            <img src="{{ $setting->logo_url }}" alt="Logo" class="h-14 w-14 shrink-0 rounded-lg object-contain">
+        @else
+            <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-ink-900 font-display text-lg font-bold text-canvas">
+                {{ strtoupper(substr($setting->nama_aplikasi, 0, 2)) }}
+            </span>
+        @endif
         <div>
-            <p class="font-display text-lg font-bold text-ink-900">SIMBIMTEK</p>
+            <p class="font-display text-lg font-bold text-ink-900">{{ $setting->nama_aplikasi }}</p>
             <p class="text-xs text-ink/55">Sistem Informasi Manajemen Bimbingan Teknis</p>
         </div>
     </div>
 
     <div class="mt-6 text-center">
         <p class="font-display text-lg font-bold uppercase tracking-wide text-ink-900">Daftar Peserta</p>
-        <p class="mt-1 text-sm text-ink/70">{{ $kegiatan['nama'] }}</p>
-        <p class="font-mono text-xs text-ink/50">{{ $kegiatan['tanggal'] }} — {{ $kegiatan['lokasi'] }}</p>
+        <p class="mt-1 text-sm text-ink/70">{{ $kegiatan->nama }}</p>
+        <p class="font-mono text-xs text-ink/50">{{ $kegiatan->hari_tanggal }} — {{ $kegiatan->lokasi }}</p>
     </div>
 
     <table class="mt-6 w-full border-collapse text-sm">
@@ -40,15 +35,19 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($peserta as $p)
+            @forelse ($peserta as $i => $p)
                 <tr class="border-b border-line">
-                    <td class="py-2.5 text-ink/70">{{ $p['no'] }}</td>
-                    <td class="py-2.5 font-medium text-ink-900">{{ $p['nama'] }}</td>
-                    <td class="py-2.5 font-mono text-xs text-ink/70">{{ $p['nip'] }}</td>
-                    <td class="py-2.5 uppercase text-ink/70">{{ $p['unit'] }}</td>
-                    <td class="py-2.5 text-ink/70">{{ $p['jabatan'] }}</td>
+                    <td class="py-2.5 text-ink/70">{{ $i + 1 }}</td>
+                    <td class="py-2.5 font-medium text-ink-900">{{ $p->nama_gelar }}</td>
+                    <td class="py-2.5 font-mono text-xs text-ink/70">{{ $p->nip }}</td>
+                    <td class="py-2.5 uppercase text-ink/70">{{ $p->unit_kerja }}</td>
+                    <td class="py-2.5 text-ink/70">{{ $p->jabatan }}</td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="5" class="py-6 text-center text-ink/50">Belum ada peserta terdaftar untuk kegiatan ini.</td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
 

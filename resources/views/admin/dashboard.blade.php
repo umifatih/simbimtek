@@ -27,7 +27,7 @@
                 [
                     'label' => 'Hadir Hari Ini',
                     'nilai' => $hadirHariIni,
-                    'link'  => route('admin.absensi.scan'),
+                    'link'  => route('admin.absensi.index'),
                     'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.5A.75.75 0 014.5 3.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75v-4.5z"/>',
                     'warna' => 'bg-success/10 text-success',
                 ],

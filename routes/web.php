@@ -70,11 +70,11 @@ Route::prefix('admin')->group(function () {
 
     Route::get('/peserta', [AdminPesertaController::class, 'index'])->name('admin.peserta.index');
 
-    // [PERBAIKAN] Penamaan route dirapikan agar tidak memicu MethodNotAllowed
     Route::get('/absensi', [AbsensiController::class, 'indexScan'])->name('admin.absensi.index'); // Untuk halaman
     Route::get('/absensi/{kegiatan}/riwayat', [AbsensiController::class, 'riwayat'])->name('admin.absensi.riwayat'); // Untuk fetch data
     Route::post('/absensi/scan', [AbsensiController::class, 'scan'])->name('admin.absensi.process'); // Untuk POST scanner
     Route::get('/absensi/{kegiatan}/export', [AbsensiController::class, 'exportExcel'])->name('admin.absensi.export');
+
 
     Route::get('/cetak', fn () => view('admin.cetak.index'))->name('admin.cetak.index');
     Route::get('/cetak/daftar-peserta', fn () => view('admin.cetak.daftar-peserta'))->name('admin.cetak.daftar-peserta');

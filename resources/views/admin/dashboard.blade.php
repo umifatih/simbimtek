@@ -74,55 +74,62 @@
             </div>
         </div>
 
-        {{-- ===== STATUS PENDAFTARAN ===== --}}
+        {{-- ===== AKSES CEPAT ===== --}}
         <div class="rounded-2xl border border-line bg-white p-5">
-            <p class="font-display text-sm font-semibold text-ink-900">Status Pendaftaran</p>
-            <div class="mt-4 space-y-3">
-                @php
-                    $totalStatus = max($menungguVerifikasi + $diterima + $ditolak, 1);
-                    $statusList = [
-                        ['label' => 'Menunggu', 'nilai' => $menungguVerifikasi, 'warna' => 'bg-amber-500'],
-                        ['label' => 'Diterima', 'nilai' => $diterima, 'warna' => 'bg-success'],
-                        ['label' => 'Ditolak', 'nilai' => $ditolak, 'warna' => 'bg-red-500'],
-                    ];
-                @endphp
-                @foreach ($statusList as $st)
-                    <div>
-                        <div class="flex items-center justify-between text-xs">
-                            <span class="text-ink/60">{{ $st['label'] }}</span>
-                            <span class="font-semibold text-ink-900">{{ $st['nilai'] }}</span>
+            <p class="font-display text-sm font-semibold text-ink-900">Akses Cepat</p>
+            <div class="mt-3 space-y-1">
+                <a href="{{ route('admin.absensi.index') }}" class="flex items-center justify-between rounded-lg px-2 py-2.5 -mx-2 hover:bg-canvas">
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-success/10 text-success">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.5h4.5v4.5h-4.5v-4.5zM15.75 4.5h4.5v4.5h-4.5v-4.5zM3.75 15h4.5v4.5h-4.5v-4.5zM15 15h1.5v1.5H15V15zM18 15h1.5v1.5H18V15zM15 18h1.5v1.5H15V18zM18 18h1.5v1.5H18V18z"/></svg>
                         </div>
-                        <div class="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-canvas">
-                            <div class="h-full rounded-full {{ $st['warna'] }}" style="width: {{ round($st['nilai'] / $totalStatus * 100) }}%"></div>
-                        </div>
+                        <p class="text-sm text-ink-900">Absensi QR Code</p>
                     </div>
-                @endforeach
+                    <svg class="h-4 w-4 shrink-0 text-ink/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </a>
+                <a href="{{ route('admin.sertifikat.index') }}" class="flex items-center justify-between rounded-lg px-2 py-2.5 -mx-2 hover:bg-canvas">
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#3E6B8F]/10 text-[#3E6B8F]">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.75h-.152c-3.196 0-6.1-1.248-8.25-3.286z"/></svg>
+                        </div>
+                        <p class="text-sm text-ink-900">Sertifikat</p>
+                    </div>
+                    <svg class="h-4 w-4 shrink-0 text-ink/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </a>
+                <a href="{{ route('admin.cetak.index') }}" class="flex items-center justify-between rounded-lg px-2 py-2.5 -mx-2 hover:bg-canvas">
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z"/></svg>
+                        </div>
+                        <p class="text-sm text-ink-900">Cetak Dokumen</p>
+                    </div>
+                    <svg class="h-4 w-4 shrink-0 text-ink/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </a>
             </div>
-            <a href="{{ route('admin.peserta.index') }}" class="mt-4 block text-center text-xs font-medium text-ink-900 underline underline-offset-2">Lihat detail</a>
         </div>
     </div>
 
     <div class="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
 
-        {{-- ===== ANTREAN VERIFIKASI ===== --}}
+        {{-- ===== ABSENSI TERBARU ===== --}}
         <div class="rounded-2xl border border-line bg-white p-5 lg:col-span-2">
             <div class="flex items-center justify-between">
-                <p class="font-display text-sm font-semibold text-ink-900">Antrean Verifikasi</p>
-                @if($menungguVerifikasi > 0)
-                    <span class="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-600">{{ $menungguVerifikasi }} menunggu</span>
-                @endif
+                <p class="font-display text-sm font-semibold text-ink-900">Absensi Terbaru</p>
+                <a href="{{ route('admin.absensi.index') }}" class="text-xs font-medium text-ink/50 hover:text-ink-900">Semua →</a>
             </div>
             <div class="mt-3 divide-y divide-line">
-                @forelse ($antreanVerifikasi as $p)
-                    <a href="{{ route('admin.peserta.index') }}" class="flex items-center justify-between gap-3 py-3 -mx-1 px-1 rounded-lg hover:bg-canvas">
+                @forelse ($absensiTerbaru as $a)
+                    <div class="flex items-center justify-between gap-3 py-3">
                         <div class="min-w-0">
-                            <p class="truncate text-sm font-medium text-ink-900">{{ $p->peserta->nama_gelar ?? '—' }}</p>
-                            <p class="mt-0.5 text-xs text-ink/45">{{ $p->created_at->diffForHumans() }}</p>
+                            <p class="truncate text-sm font-medium text-ink-900">{{ $a->pendaftaran->peserta->nama_gelar ?? '—' }}</p>
+                            <p class="mt-0.5 truncate text-xs text-ink/45">{{ $a->pendaftaran->kegiatan->nama ?? '—' }}</p>
                         </div>
-                        <span class="shrink-0 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-600">Baru</span>
-                    </a>
+                        <span class="shrink-0 rounded-full bg-success/10 px-2.5 py-1 text-xs font-semibold text-success">
+                            {{ $a->waktu_scan?->translatedFormat('d M · H:i') ?? '-' }}
+                        </span>
+                    </div>
                 @empty
-                    <p class="py-8 text-center text-sm text-ink/40">Tidak ada antrean verifikasi.</p>
+                    <p class="py-8 text-center text-sm text-ink/40">Belum ada absensi.</p>
                 @endforelse
             </div>
         </div>

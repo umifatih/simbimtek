@@ -14,9 +14,6 @@ class AdminDashboardController extends Controller
     public function index()
     {
         $totalPeserta = Pendaftaran::count();
-        $menungguVerifikasi = Pendaftaran::where('status', 'daftar')->count();
-        $diterima = Pendaftaran::where('status', 'diterima')->count();
-        $ditolak = Pendaftaran::where('status', 'ditolak')->count();
 
         $kegiatanAktif = Kegiatan::where('status', 'dibuka')->count();
 
@@ -28,10 +25,9 @@ class AdminDashboardController extends Controller
             ->take(3)
             ->get();
 
-        $antreanVerifikasi = Pendaftaran::with('peserta')
-            ->where('status', 'daftar')
-            ->latest()
-            ->take(3)
+        $absensiTerbaru = Absensi::with(['pendaftaran.peserta', 'pendaftaran.kegiatan'])
+            ->latest('waktu_scan')
+            ->take(5)
             ->get();
 
         // Data Master
@@ -46,13 +42,10 @@ class AdminDashboardController extends Controller
 
         return view('admin.dashboard', compact(
             'totalPeserta',
-            'menungguVerifikasi',
-            'diterima',
-            'ditolak',
             'kegiatanAktif',
             'hadirHariIni',
             'kegiatanBerjalan',
-            'antreanVerifikasi',
+            'absensiTerbaru',
             'totalDataMaster',
             'dataMasterUpdatedAt',
             'pengaturanLogoAda',

@@ -210,11 +210,11 @@
                         @endphp
                         @foreach ($dokumen as $d)
                             @if ($d['siap'])
-                                <a href="{{ route('pendaftaran.unduh', ['pendaftaran' => $pendaftaran->id, 'jenis' => $d['jenis']]) }}"
+                                <a href="{{ route('pendaftaran.preview', ['pendaftaran' => $pendaftaran->id, 'jenis' => $d['jenis']]) }}"
                                    class="group flex items-center justify-between gap-3 rounded-xl border border-line bg-white px-4 py-3.5 text-sm font-semibold text-ink-900 transition hover:border-gold/40 hover:bg-gold/[0.04] focus:ring-2 focus:ring-gold"
                                 >
                                     {{ $d['label'] }}
-                                    <svg class="h-4 w-4 shrink-0 text-ink/40 transition group-hover:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m0 0l-6-6m6 6l6-6" /></svg>
+                                    <svg class="h-4 w-4 shrink-0 text-ink/40 transition group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                                 </a>
                             @else
                                 <div class="flex items-center justify-between gap-3 rounded-xl border border-dashed border-line bg-canvas px-4 py-3.5 text-sm font-medium text-ink/40">

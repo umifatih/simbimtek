@@ -6,6 +6,9 @@ use App\Models\Kegiatan;
 use App\Models\Peserta;
 use App\Models\Pendaftaran;
 use App\Models\DataMaster;
+use App\Models\MateriKegiatan;
+use App\Models\SiteSetting;
+use App\Support\DocxPreviewer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use PhpOffice\PhpWord\Element\TextRun;
@@ -17,6 +20,13 @@ use Endroid\QrCode\ErrorCorrectionLevel;
 
 class PendaftaranController extends Controller
 {
+    private const LABEL_JENIS = [
+        'bukti'       => 'Bukti Pendaftaran',
+        'surat-tugas' => 'Surat Tugas',
+        'sppd'        => 'SPPD',
+        'sertifikat'  => 'Sertifikat',
+    ];
+
     public function create()
     {
         $kegiatanList = Kegiatan::withCount(['pendaftaran as kuota_terisi'])
@@ -176,19 +186,13 @@ class PendaftaranController extends Controller
                        ->with('success', true);
     }
 
-    public function unduh(Pendaftaran $pendaftaran, string $jenis)
+    /** ===== Preview (HTML asli hasil convert docx) ===== */
+    public function previewUnduh(Pendaftaran $pendaftaran, string $jenis)
     {
+        abort_unless(array_key_exists($jenis, self::LABEL_JENIS), 404);
+
         $pendaftaran->load(['peserta', 'kegiatan']);
         $kegiatan = $pendaftaran->kegiatan;
-
-        $templateMap = [
-            'bukti'       => storage_path('app/templates/pendaftar.docx'),
-            'surat-tugas' => storage_path('app/templates/surat-tugas.docx'),
-            'sppd'        => storage_path('app/templates/sppd.docx'),
-            'sertifikat'  => storage_path('app/templates/sertifikat.docx'),
-        ];
-
-        abort_unless(isset($templateMap[$jenis]), 404);
 
         if ($jenis === 'sertifikat') {
             abort_unless(
@@ -197,6 +201,59 @@ class PendaftaranController extends Controller
                 'Sertifikat belum bisa diunduh — kehadiranmu belum tercatat lengkap.'
             );
         }
+
+        $path = $this->buatDokumen($jenis, $pendaftaran, $kegiatan);
+        $html = DocxPreviewer::toHtml($path);
+        @unlink($path);
+
+        return view('cetak.preview-docx', [
+            'html'        => $html,
+            'title'       => self::LABEL_JENIS[$jenis],
+            'unduh_url'   => route('pendaftaran.unduh', ['pendaftaran' => $pendaftaran->id, 'jenis' => $jenis]),
+            'kembali_url' => route('cek-status', ['nomor_pendaftaran' => $pendaftaran->nomor_pendaftaran]),
+        ]);
+    }
+
+    public function unduh(Pendaftaran $pendaftaran, string $jenis)
+    {
+        abort_unless(array_key_exists($jenis, self::LABEL_JENIS), 404);
+
+        $pendaftaran->load(['peserta', 'kegiatan']);
+        $kegiatan = $pendaftaran->kegiatan;
+
+        if ($jenis === 'sertifikat') {
+            abort_unless(
+                $pendaftaran->absensiLengkap(),
+                403,
+                'Sertifikat belum bisa diunduh — kehadiranmu belum tercatat lengkap.'
+            );
+        }
+
+        $path = $this->buatDokumen($jenis, $pendaftaran, $kegiatan);
+        $namaFile = $jenis . '-' . Str::slug($pendaftaran->nama_gelar) . '.docx';
+
+        if (in_array($jenis, ['surat-tugas', 'sppd']) && $pendaftaran->status === 'daftar') {
+            $pendaftaran->update(['status' => 'sppd']);
+        }
+
+        return response()->download($path, $namaFile)->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Isi template docx sesuai $jenis dan simpan ke file sementara unik.
+     * Dipakai baik oleh unduh() (langsung didownload) maupun previewUnduh()
+     * (di-convert dulu ke HTML lalu filenya dihapus). Method ini TIDAK
+     * mengubah status pendaftaran — itu cuma boleh terjadi di unduh() asli,
+     * supaya sekadar melihat preview tidak ikut mengubah status berkas.
+     */
+    private function buatDokumen(string $jenis, Pendaftaran $pendaftaran, Kegiatan $kegiatan): string
+    {
+        $templateMap = [
+            'bukti'       => storage_path('app/templates/pendaftar.docx'),
+            'surat-tugas' => storage_path('app/templates/surat-tugas.docx'),
+            'sppd'        => storage_path('app/templates/sppd.docx'),
+            'sertifikat'  => storage_path('app/templates/sertifikat.docx'),
+        ];
 
         $template = new TemplateProcessor($templateMap[$jenis]);
 
@@ -221,13 +278,13 @@ class PendaftaranController extends Controller
         );
 
         // Mengisi tanggal cetak / tanggal pendaftaran format Indonesia (WIB)
-        $tanggalPendaftaran = $pendaftaran->created_at 
-            ? $pendaftaran->created_at->timezone('Asia/Jakarta')->translatedFormat('d F Y') 
+        $tanggalPendaftaran = $pendaftaran->created_at
+            ? $pendaftaran->created_at->timezone('Asia/Jakarta')->translatedFormat('d F Y')
             : now('Asia/Jakarta')->translatedFormat('d F Y');
-        
+
         $template->setValue('tanggal_cetak', $tanggalPendaftaran);
 
-        $pengaturan = \App\Models\SiteSetting::current();
+        $pengaturan = SiteSetting::current();
         $template->setValue('nama_ketua_k3s', $pengaturan->nama_ketua_k3s ?? '-');
         $template->setValue('nip_ketua_k3s', $pengaturan->nip_ketua_k3s ?? '-');
 
@@ -254,7 +311,7 @@ class PendaftaranController extends Controller
                 mkdir($folderQr, 0755, true);
             }
 
-            $qrPath = $folderQr . '/qr_' . $pendaftaran->id . '.png';
+            $qrPath = $folderQr . '/qr_' . $pendaftaran->id . '_' . uniqid() . '.png';
 
             $qrCode = new QrCode(
                 data: $pendaftaran->token_kehadiran,
@@ -286,30 +343,26 @@ class PendaftaranController extends Controller
             $this->isiMateriKegiatan($template, $kegiatan);
         }
 
-        $namaFile = $jenis . '-' . Str::slug($pendaftaran->nama_gelar) . '.docx';
         $folderTmp = storage_path('app/tmp');
-
-        if (!is_dir($folderTmp)) {
+        if (! is_dir($folderTmp)) {
             mkdir($folderTmp, 0755, true);
         }
 
-        $pathSementara = $folderTmp . '/' . $namaFile;
-        $template->saveAs($pathSementara);
+        $path = $folderTmp . '/' . $jenis . '-' . Str::slug($pendaftaran->nama_gelar) . '-' . uniqid() . '.docx';
+        $template->saveAs($path);
 
-        if (in_array($jenis, ['surat-tugas', 'sppd']) && $pendaftaran->status === 'daftar') {
-            $pendaftaran->update(['status' => 'sppd']);
-        }
-
+        // Gambar QR sudah ter-embed ke dalam docx di atas, filenya sendiri
+        // tidak dibutuhkan lagi baik untuk download maupun preview.
         if ($qrPath && file_exists($qrPath)) {
             @unlink($qrPath);
         }
 
-        return response()->download($pathSementara, $namaFile)->deleteFileAfterSend(true);
+        return $path;
     }
-    
+
     private function isiMateriKegiatan(TemplateProcessor $template, Kegiatan $kegiatan): void
     {
-        $materiList = \App\Models\MateriKegiatan::where('kegiatan_id', $kegiatan->id)
+        $materiList = MateriKegiatan::where('kegiatan_id', $kegiatan->id)
             ->orderBy('urutan')
             ->get();
 

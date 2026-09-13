@@ -32,6 +32,10 @@ Route::get('/pendaftaran/cari-nip/{nip}', [PendaftaranController::class, 'cariNi
 Route::get('/pendaftaran/cari-sekolah', [PendaftaranController::class, 'cariSekolah'])->name('pendaftaran.cari-sekolah');
 Route::get('/pendaftaran/cari-peserta', [PendaftaranController::class, 'cariPeserta'])->name('pendaftaran.cari-peserta');
 
+// [BARU] Preview (HTML asli hasil convert docx) — harus didaftar SEBELUM /unduh/{jenis}
+Route::get('/pendaftaran/{pendaftaran}/preview/{jenis}', [PendaftaranController::class, 'previewUnduh'])
+    ->name('pendaftaran.preview');
+
 Route::get('/pendaftaran/{pendaftaran}/unduh/{jenis}', [PendaftaranController::class, 'unduh'])
     ->name('pendaftaran.unduh');
 
@@ -78,9 +82,17 @@ Route::prefix('admin')->group(function () {
 
 
     Route::get('/cetak', [AdminCetakController::class, 'index'])->name('admin.cetak.index');
+
+    // [BARU] Preview (HTML asli hasil convert docx) — harus didaftar SEBELUM route download
+    Route::get('/cetak/daftar-peserta/preview', [AdminCetakController::class, 'previewDaftarPeserta'])->name('admin.cetak.daftar-peserta.preview');
+    Route::get('/cetak/daftar-hadir/preview', [AdminCetakController::class, 'previewDaftarHadir'])->name('admin.cetak.daftar-hadir.preview');
+    Route::get('/cetak/konsumsi-atk/preview', [AdminCetakController::class, 'previewKonsumsiAtk'])->name('admin.cetak.konsumsi-atk.preview');
+
+    // Download (Word)
     Route::get('/cetak/daftar-peserta', [AdminCetakController::class, 'unduhDaftarPeserta'])->name('admin.cetak.daftar-peserta');
     Route::get('/cetak/daftar-hadir', [AdminCetakController::class, 'unduhDaftarHadir'])->name('admin.cetak.daftar-hadir');
     Route::get('/cetak/konsumsi-atk', [AdminCetakController::class, 'unduhKonsumsiAtk'])->name('admin.cetak.konsumsi-atk');
+
         // [BARU] Sertifikat — daftar peserta siap cetak per kegiatan
     Route::get('/sertifikat', [AdminSertifikatController::class, 'index'])->name('admin.sertifikat.index');
     Route::patch('sertifikat/ketua', [AdminSertifikatController::class, 'updateKetua'])

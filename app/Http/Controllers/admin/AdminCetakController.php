@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Kegiatan;
 use App\Models\Pendaftaran;
 use App\Models\SiteSetting;
+use App\Support\DocxPreviewer;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -21,12 +22,109 @@ class AdminCetakController extends Controller
         return view('admin.cetak.index', compact('daftarKegiatan'));
     }
 
+    /** ===== Preview (HTML asli hasil convert docx) ===== */
+
+    public function previewDaftarPeserta(Request $request)
+    {
+        [$kegiatan, $peserta] = $this->ambilData($request);
+        $setting = SiteSetting::current();
+
+        $path = $this->buatDaftarPeserta($kegiatan, $peserta, $setting);
+        $html = DocxPreviewer::toHtml($path);
+        @unlink($path);
+
+        return view('cetak.preview-docx', [
+            'html'        => $html,
+            'title'       => 'Daftar Peserta',
+            'unduh_url'   => route('admin.cetak.daftar-peserta', ['kegiatan_id' => $kegiatan->id]),
+            'kembali_url' => route('admin.cetak.index'),
+        ]);
+    }
+
+    public function previewDaftarHadir(Request $request)
+    {
+        [$kegiatan, $peserta] = $this->ambilData($request);
+        $jadwalHarian = $this->jadwalHarian($kegiatan);
+        $setting = SiteSetting::current();
+
+        $path = $this->buatDaftarHadir($kegiatan, $peserta, $jadwalHarian, $setting);
+        $html = DocxPreviewer::toHtml($path);
+        @unlink($path);
+
+        return view('cetak.preview-docx', [
+            'html'        => $html,
+            'title'       => 'Daftar Hadir',
+            'unduh_url'   => route('admin.cetak.daftar-hadir', ['kegiatan_id' => $kegiatan->id]),
+            'kembali_url' => route('admin.cetak.index'),
+        ]);
+    }
+
+    public function previewKonsumsiAtk(Request $request)
+    {
+        [$kegiatan, $peserta] = $this->ambilData($request);
+        $jadwalHarian = $this->jadwalHarian($kegiatan);
+        $setting = SiteSetting::current();
+
+        $path = $this->buatKonsumsiAtk($kegiatan, $peserta, $jadwalHarian, $setting);
+        $html = DocxPreviewer::toHtml($path);
+        @unlink($path);
+
+        return view('cetak.preview-docx', [
+            'html'        => $html,
+            'title'       => 'Daftar Penerimaan Konsumsi & ATK',
+            'unduh_url'   => route('admin.cetak.konsumsi-atk', ['kegiatan_id' => $kegiatan->id]),
+            'kembali_url' => route('admin.cetak.index'),
+        ]);
+    }
+
     /** ===== Daftar Peserta (Word) ===== */
     public function unduhDaftarPeserta(Request $request)
     {
         [$kegiatan, $peserta] = $this->ambilData($request);
         $setting = SiteSetting::current();
 
+        $path = $this->buatDaftarPeserta($kegiatan, $peserta, $setting);
+
+        return response()
+            ->download($path, 'Daftar-Peserta-' . Str::slug($kegiatan->nama) . '.docx')
+            ->deleteFileAfterSend(true);
+    }
+
+    /** ===== Daftar Hadir (Word, per hari) ===== */
+    public function unduhDaftarHadir(Request $request)
+    {
+        [$kegiatan, $peserta] = $this->ambilData($request);
+        $jadwalHarian = $this->jadwalHarian($kegiatan);
+        $setting = SiteSetting::current();
+
+        $path = $this->buatDaftarHadir($kegiatan, $peserta, $jadwalHarian, $setting);
+
+        return response()
+            ->download($path, 'Daftar-Hadir-' . Str::slug($kegiatan->nama) . '.docx')
+            ->deleteFileAfterSend(true);
+    }
+
+    /** ===== Konsumsi & ATK (Word, per hari) ===== */
+    public function unduhKonsumsiAtk(Request $request)
+    {
+        [$kegiatan, $peserta] = $this->ambilData($request);
+        $jadwalHarian = $this->jadwalHarian($kegiatan);
+        $setting = SiteSetting::current();
+
+        $path = $this->buatKonsumsiAtk($kegiatan, $peserta, $jadwalHarian, $setting);
+
+        return response()
+            ->download($path, 'Konsumsi-ATK-' . Str::slug($kegiatan->nama) . '.docx')
+            ->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Isi template daftar-peserta.docx dan simpan ke file sementara.
+     * Dipakai baik oleh unduh (langsung didownload) maupun preview
+     * (di-convert dulu ke HTML lalu filenya dihapus).
+     */
+    private function buatDaftarPeserta(Kegiatan $kegiatan, $peserta, SiteSetting $setting): string
+    {
         $template = new TemplateProcessor(storage_path('app/templates/daftar-peserta.docx'));
 
         $this->isiKop($template, $setting);
@@ -56,16 +154,14 @@ class AdminCetakController extends Controller
             $template->setValue('jabatan#1', '');
         }
 
-        return $this->unduhDanBersihkan($template, 'Daftar-Peserta-' . Str::slug($kegiatan->nama) . '.docx');
+        return $this->simpanSementara($template, 'daftar-peserta-' . Str::slug($kegiatan->nama));
     }
 
-    /** ===== Daftar Hadir (Word, per hari) ===== */
-    public function unduhDaftarHadir(Request $request)
+    /**
+     * Isi template daftar-hadir.docx (per hari, blok HARI di-clone) dan simpan sementara.
+     */
+    private function buatDaftarHadir(Kegiatan $kegiatan, $peserta, array $jadwalHarian, SiteSetting $setting): string
     {
-        [$kegiatan, $peserta] = $this->ambilData($request);
-        $jadwalHarian = $this->jadwalHarian($kegiatan);
-        $setting = SiteSetting::current();
-
         $template = new TemplateProcessor(storage_path('app/templates/daftar-hadir.docx'));
         $template->cloneBlock('HARI', count($jadwalHarian), true, true);
 
@@ -99,16 +195,14 @@ class AdminCetakController extends Controller
             }
         }
 
-        return $this->unduhDanBersihkan($template, 'Daftar-Hadir-' . Str::slug($kegiatan->nama) . '.docx');
+        return $this->simpanSementara($template, 'daftar-hadir-' . Str::slug($kegiatan->nama));
     }
 
-    /** ===== Konsumsi & ATK (Word, per hari) ===== */
-    public function unduhKonsumsiAtk(Request $request)
+    /**
+     * Isi template konsumsi-atk.docx (per hari, blok HARI di-clone) dan simpan sementara.
+     */
+    private function buatKonsumsiAtk(Kegiatan $kegiatan, $peserta, array $jadwalHarian, SiteSetting $setting): string
     {
-        [$kegiatan, $peserta] = $this->ambilData($request);
-        $jadwalHarian = $this->jadwalHarian($kegiatan);
-        $setting = SiteSetting::current();
-
         $template = new TemplateProcessor(storage_path('app/templates/konsumsi-atk.docx'));
         $template->cloneBlock('HARI', count($jadwalHarian), true, true);
 
@@ -142,7 +236,7 @@ class AdminCetakController extends Controller
             }
         }
 
-        return $this->unduhDanBersihkan($template, 'Konsumsi-ATK-' . Str::slug($kegiatan->nama) . '.docx');
+        return $this->simpanSementara($template, 'konsumsi-atk-' . Str::slug($kegiatan->nama));
     }
 
     /**
@@ -209,16 +303,22 @@ class AdminCetakController extends Controller
         // apa adanya (teks kosong) di dokumen — tidak error.
     }
 
-    private function unduhDanBersihkan(TemplateProcessor $template, string $namaFile)
+    /**
+     * Simpan TemplateProcessor yang sudah diisi ke file sementara unik,
+     * lalu kembalikan path-nya. Pemanggil yang menentukan file ini
+     * didownload (lalu dihapus oleh deleteFileAfterSend) atau
+     * di-convert ke HTML untuk preview (lalu dihapus manual).
+     */
+    private function simpanSementara(TemplateProcessor $template, string $prefix): string
     {
         $folderTmp = storage_path('app/tmp');
         if (! is_dir($folderTmp)) {
             mkdir($folderTmp, 0755, true);
         }
 
-        $path = $folderTmp . '/' . $namaFile;
+        $path = $folderTmp . '/' . $prefix . '-' . uniqid() . '.docx';
         $template->saveAs($path);
 
-        return response()->download($path, $namaFile)->deleteFileAfterSend(true);
+        return $path;
     }
 }

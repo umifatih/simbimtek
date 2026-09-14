@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\LogsActivity;
 
 class DataMaster extends Model
 {
+    use LogsActivity;
+
     protected $table = 'data_masters';
 
     protected $fillable = [
@@ -16,6 +19,10 @@ class DataMaster extends Model
         'desa',
     ];
 
+    public function labelAktivitas(): string
+    {
+        return "data master \"{$this->data_sekolah}\"";
+    }
 
     public function setNamaKepsekAttribute($value): void
     {

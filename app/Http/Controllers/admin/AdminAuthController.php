@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminAuthController extends Controller
 {
@@ -14,26 +15,29 @@ class AdminAuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate([
+        $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        // TODO: ganti dengan auth asli begitu model Admin/User siap, contoh:
-        // if (! Auth::guard('admin')->attempt($request->only('email', 'password'), $request->boolean('remember'))) {
-        //     return back()->withErrors(['email' => 'Email atau kata sandi salah.']);
-        // }
-        // $request->session()->regenerate();
+        if (! Auth::guard('admin')->attempt($credentials, $request->boolean('remember'))) {
+            return back()->withErrors([
+                'email' => 'Email atau kata sandi salah.',
+            ])->onlyInput('email');
+        }
 
-        return redirect('/admin/dashboard');
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('admin.dashboard'));
     }
 
     public function logout(Request $request)
     {
-        // Auth::guard('admin')->logout();
-        // $request->session()->invalidate();
-        // $request->session()->regenerateToken();
+        Auth::guard('admin')->logout();
 
-        return redirect('/admin/login');
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('admin.login');
     }
 }

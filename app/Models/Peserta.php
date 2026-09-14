@@ -5,29 +5,35 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\LogsActivity;
 
 class Peserta extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = 'peserta';
 
     protected $fillable = [
-    'nip',
-    'nama_gelar',
-    'unit_kerja',
-    'pangkat_golongan',
-    'tempat_lahir',   
-    'tanggal_lahir',   
-    'jabatan',
-    'email',
-    'nama_gelar_kepsek',
-    'nip_kepsek',
-];
+        'nip',
+        'nama_gelar',
+        'unit_kerja',
+        'pangkat_golongan',
+        'tempat_lahir',
+        'tanggal_lahir',
+        'jabatan',
+        'email',
+        'nama_gelar_kepsek',
+        'nip_kepsek',
+    ];
 
-protected $casts = [
-    'tanggal_lahir' => 'date',
-];
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+    ];
+
+    public function labelAktivitas(): string
+    {
+        return "data peserta \"{$this->nama_gelar}\"";
+    }
 
     public function pendaftaran(): HasMany
     {

@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\LogsActivity;
 
 class Kegiatan extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = 'kegiatan';
 
@@ -35,6 +36,11 @@ class Kegiatan extends Model
     ];
 
     protected $appends = ['kuota_terisi', 'teks_jadwal', 'hari_tanggal', 'status_efektif'];
+
+    public function labelAktivitas(): string
+    {
+        return "kegiatan \"{$this->nama}\"";
+    }
 
     public function pendaftaran(): HasMany
     {
@@ -92,24 +98,24 @@ class Kegiatan extends Model
     }
 
     public function getStatusEfektifAttribute(): string
-{
-    // Admin override manual selalu menang duluan
-    if ($this->status === 'selesai') {
-        return 'selesai';
-    }
+    {
+        // Admin override manual selalu menang duluan
+        if ($this->status === 'selesai') {
+            return 'selesai';
+        }
 
-    if ($this->tanggal_selesai && $this->tanggal_selesai->lt(now()->startOfDay())) {
-        return 'selesai';
-    }
+        if ($this->tanggal_selesai && $this->tanggal_selesai->lt(now()->startOfDay())) {
+            return 'selesai';
+        }
 
-    if ($this->status === 'ditutup') {
-        return 'ditutup';
-    }
+        if ($this->status === 'ditutup') {
+            return 'ditutup';
+        }
 
-    if ($this->kuota > 0 && $this->kuota_terisi >= $this->kuota) {
-        return 'ditutup';
-    }
+        if ($this->kuota > 0 && $this->kuota_terisi >= $this->kuota) {
+            return 'ditutup';
+        }
 
-    return 'dibuka';
-}
+        return 'dibuka';
+    }
 }

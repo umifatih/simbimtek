@@ -11,9 +11,11 @@ use App\Http\Controllers\Admin\AdminPesertaController;
 use App\Http\Controllers\Admin\AdminKegiatanController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\DataMasterController;
-use App\Http\Controllers\Admin\AdminPengaturanController; // [BARU]
-use App\Http\Controllers\Admin\AdminSertifikatController; // [BARU]
+use App\Http\Controllers\Admin\AdminPengaturanController;
+use App\Http\Controllers\Admin\AdminSertifikatController;
 use App\Http\Controllers\Admin\AdminCetakController;
+use App\Http\Controllers\Admin\AdminProfilController;
+use App\Http\Controllers\Admin\AdminLogAktivitasController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,7 +34,6 @@ Route::get('/pendaftaran/cari-nip/{nip}', [PendaftaranController::class, 'cariNi
 Route::get('/pendaftaran/cari-sekolah', [PendaftaranController::class, 'cariSekolah'])->name('pendaftaran.cari-sekolah');
 Route::get('/pendaftaran/cari-peserta', [PendaftaranController::class, 'cariPeserta'])->name('pendaftaran.cari-peserta');
 
-// [BARU] Preview (HTML asli hasil convert docx) — harus didaftar SEBELUM /unduh/{jenis}
 Route::get('/pendaftaran/{pendaftaran}/preview/{jenis}', [PendaftaranController::class, 'previewUnduh'])
     ->name('pendaftaran.preview');
 
@@ -57,7 +58,7 @@ Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admi
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->middleware('auth:admin')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
     Route::get('/data-master', [DataMasterController::class, 'index'])->name('admin.data-master.index');
@@ -75,32 +76,35 @@ Route::prefix('admin')->group(function () {
 
     Route::get('/peserta', [AdminPesertaController::class, 'index'])->name('admin.peserta.index');
 
-    Route::get('/absensi', [AbsensiController::class, 'indexScan'])->name('admin.absensi.index'); // Untuk halaman
-    Route::get('/absensi/{kegiatan}/riwayat', [AbsensiController::class, 'riwayat'])->name('admin.absensi.riwayat'); // Untuk fetch data
-    Route::post('/absensi/scan', [AbsensiController::class, 'scan'])->name('admin.absensi.process'); // Untuk POST scanner
+    Route::get('/absensi', [AbsensiController::class, 'indexScan'])->name('admin.absensi.index');
+    Route::get('/absensi/{kegiatan}/riwayat', [AbsensiController::class, 'riwayat'])->name('admin.absensi.riwayat');
+    Route::post('/absensi/scan', [AbsensiController::class, 'scan'])->name('admin.absensi.process');
     Route::get('/absensi/{kegiatan}/export', [AbsensiController::class, 'exportExcel'])->name('admin.absensi.export');
 
     Route::get('/cetak', [AdminCetakController::class, 'index'])->name('admin.cetak.index');
 
-    // [BARU] Preview (HTML asli hasil convert docx) — harus didaftar SEBELUM route download
     Route::get('/cetak/daftar-peserta/preview', [AdminCetakController::class, 'previewDaftarPeserta'])->name('admin.cetak.daftar-peserta.preview');
     Route::get('/cetak/daftar-hadir/preview', [AdminCetakController::class, 'previewDaftarHadir'])->name('admin.cetak.daftar-hadir.preview');
     Route::get('/cetak/konsumsi-atk/preview', [AdminCetakController::class, 'previewKonsumsiAtk'])->name('admin.cetak.konsumsi-atk.preview');
 
-    // Download (Word)
     Route::get('/cetak/daftar-peserta', [AdminCetakController::class, 'unduhDaftarPeserta'])->name('admin.cetak.daftar-peserta');
     Route::get('/cetak/daftar-hadir', [AdminCetakController::class, 'unduhDaftarHadir'])->name('admin.cetak.daftar-hadir');
     Route::get('/cetak/konsumsi-atk', [AdminCetakController::class, 'unduhKonsumsiAtk'])->name('admin.cetak.konsumsi-atk');
 
-    // [BARU] Sertifikat — daftar peserta siap cetak per kegiatan
     Route::get('/sertifikat', [AdminSertifikatController::class, 'index'])->name('admin.sertifikat.index');
     Route::patch('/sertifikat/panitia/{kegiatan}', [AdminSertifikatController::class, 'updatePanitia'])->name('admin.sertifikat.panitia.update');
     Route::post('/sertifikat/materi', [AdminSertifikatController::class, 'storeMateri'])->name('admin.sertifikat.materi.store');
     Route::delete('/sertifikat/materi/{materi}', [AdminSertifikatController::class, 'destroyMateri'])->name('admin.sertifikat.materi.destroy');
 
-    // [BARU] Pengaturan beranda / identitas situs
     Route::get('/pengaturan', [AdminPengaturanController::class, 'edit'])->name('admin.pengaturan.edit');
     Route::post('/pengaturan', [AdminPengaturanController::class, 'update'])->name('admin.pengaturan.update');
+
+    // [BARU] Profil admin (self-service)
+    Route::get('/profil', [AdminProfilController::class, 'edit'])->name('admin.profil.edit');
+    Route::put('/profil', [AdminProfilController::class, 'update'])->name('admin.profil.update');
+
+    // [BARU] Log aktivitas — bisa dilihat semua admin
+    Route::get('/log-aktivitas', [AdminLogAktivitasController::class, 'index'])->name('admin.log-aktivitas.index');
 
     Route::get('/debug-setting', function () {
         return response()->json(\App\Models\SiteSetting::first());

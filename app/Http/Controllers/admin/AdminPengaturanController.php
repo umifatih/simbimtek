@@ -29,11 +29,29 @@ class AdminPengaturanController extends Controller
             'deskripsi' => ['required', 'string'],
             'tentang_program_judul' => ['required', 'string', 'max:255'],
             'tentang_program_deskripsi' => ['required', 'string'],
+            'syarat_judul' => ['required', 'string', 'max:255'],
+            'syarat_list_text' => ['required', 'string'],
             'kenapa_simbimtek_judul' => ['required', 'string', 'max:255'],
             'fitur' => ['required', 'array', 'size:4'],
             'fitur.*.judul' => ['required', 'string', 'max:100'],
             'fitur.*.desc' => ['required', 'string', 'max:255'],
         ]);
+
+        // Pecah textarea jadi array, buang baris kosong
+        $data['syarat_list'] = collect(explode("\n", $data['syarat_list_text']))
+            ->map(fn ($baris) => trim($baris))
+            ->filter(fn ($baris) => $baris !== '')
+            ->values()
+            ->all();
+
+        unset($data['syarat_list_text']);
+
+        // [DI SINI] Validasi tambahan: minimal 1 syarat setelah baris kosong dibuang
+        if (empty($data['syarat_list'])) {
+            return back()
+                ->withErrors(['syarat_list_text' => 'Minimal isi satu syarat.'])
+                ->withInput();
+        }
 
         if ($request->hasFile('logo')) {
             if ($setting->logo_path) {

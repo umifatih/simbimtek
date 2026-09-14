@@ -292,10 +292,6 @@ class PendaftaranController extends Controller
 
         $template->setValue('tanggal_cetak', $tanggalPendaftaran);
 
-        $pengaturan = SiteSetting::current();
-        $template->setValue('nama_ketua_k3s', $pengaturan->nama_ketua_k3s ?? '-');
-        $template->setValue('nip_ketua_k3s', $pengaturan->nip_ketua_k3s ?? '-');
-
         $template->setValue('nama_kegiatan', $kegiatan->nama);
         $template->setValue('hari_tanggal', $kegiatan->hari_tanggal);
         $template->setValue('waktu', substr($kegiatan->waktu, 0, 5));

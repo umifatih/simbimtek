@@ -16,6 +16,17 @@
         <form action="{{ route('admin.pengaturan.update') }}" method="POST" enctype="multipart/form-data" class="mt-6 space-y-6">
             @csrf
 
+            @if ($errors->any())
+                <div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
+                    <p class="font-semibold">Ada masalah saat menyimpan:</p>
+                    <ul class="mt-1 list-disc pl-5">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <div>
                 <label class="block text-sm font-semibold text-ink-900">Logo</label>
                 <div class="mt-2 flex items-center gap-4">
@@ -69,7 +80,23 @@
                 @error('tentang_program_deskripsi') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
             </div>
 
-            <hr class="border-line">
+                        <hr class="border-line">
+
+            {{-- [BARU] Siapa yang wajib ikut --}}
+            <div>
+                <label class="block text-sm font-semibold text-ink-900">Judul "Siapa yang wajib ikut?"</label>
+                <input type="text" name="syarat_judul" value="{{ old('syarat_judul', $setting->syarat_judul) }}"
+                       class="mt-1.5 w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-ink-900/30 focus:outline-none focus:ring-2 focus:ring-gold/30">
+                @error('syarat_judul') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-ink-900">Daftar Syarat</label>
+                <p class="mt-1 text-xs text-ink/50">Tulis satu syarat per baris.</p>
+                <textarea name="syarat_list_text" rows="5"
+                          class="mt-1.5 w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-ink-900/30 focus:outline-none focus:ring-2 focus:ring-gold/30">{{ old('syarat_list_text', implode("\n", $setting->syarat_list ?? [])) }}</textarea>
+                @error('syarat_list_text') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+            </div>
 
             <div>
                 <label class="block text-sm font-semibold text-ink-900">Judul "Kenapa SIMBIMTEK"</label>

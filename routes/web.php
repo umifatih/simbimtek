@@ -80,7 +80,6 @@ Route::prefix('admin')->group(function () {
     Route::post('/absensi/scan', [AbsensiController::class, 'scan'])->name('admin.absensi.process'); // Untuk POST scanner
     Route::get('/absensi/{kegiatan}/export', [AbsensiController::class, 'exportExcel'])->name('admin.absensi.export');
 
-
     Route::get('/cetak', [AdminCetakController::class, 'index'])->name('admin.cetak.index');
 
     // [BARU] Preview (HTML asli hasil convert docx) — harus didaftar SEBELUM route download
@@ -93,13 +92,12 @@ Route::prefix('admin')->group(function () {
     Route::get('/cetak/daftar-hadir', [AdminCetakController::class, 'unduhDaftarHadir'])->name('admin.cetak.daftar-hadir');
     Route::get('/cetak/konsumsi-atk', [AdminCetakController::class, 'unduhKonsumsiAtk'])->name('admin.cetak.konsumsi-atk');
 
-        // [BARU] Sertifikat — daftar peserta siap cetak per kegiatan
+    // [BARU] Sertifikat — daftar peserta siap cetak per kegiatan
     Route::get('/sertifikat', [AdminSertifikatController::class, 'index'])->name('admin.sertifikat.index');
-    Route::patch('sertifikat/ketua', [AdminSertifikatController::class, 'updateKetua'])
-    ->name('admin.sertifikat.ketua.update');
+    Route::patch('/sertifikat/panitia/{kegiatan}', [AdminSertifikatController::class, 'updatePanitia'])->name('admin.sertifikat.panitia.update');
     Route::post('/sertifikat/materi', [AdminSertifikatController::class, 'storeMateri'])->name('admin.sertifikat.materi.store');
     Route::delete('/sertifikat/materi/{materi}', [AdminSertifikatController::class, 'destroyMateri'])->name('admin.sertifikat.materi.destroy');
-    
+
     // [BARU] Pengaturan beranda / identitas situs
     Route::get('/pengaturan', [AdminPengaturanController::class, 'edit'])->name('admin.pengaturan.edit');
     Route::post('/pengaturan', [AdminPengaturanController::class, 'update'])->name('admin.pengaturan.update');

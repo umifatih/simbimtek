@@ -127,23 +127,19 @@
                         {{ $setting->tentang_program_deskripsi }}
                     </p>
 
+                    @if ($setting->syarat_judul && !empty($setting->syarat_list))
                     <div class="mt-6 rounded-2xl border border-gold/25 bg-gold/[0.05] p-5">
-                        <p class="font-display text-sm font-semibold text-ink-900">Siapa yang wajib ikut?</p>
+                        <p class="font-display text-sm font-semibold text-ink-900">{{ $setting->syarat_judul }}</p>
                         <ul class="mt-3 space-y-2 text-sm text-ink/70">
-                            <li class="flex items-start gap-2.5">
-                                <svg class="mt-0.5 h-4 w-4 shrink-0 text-gold-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
-                                Bendahara BOSP di setiap satuan pendidikan
-                            </li>
-                            <li class="flex items-start gap-2.5">
-                                <svg class="mt-0.5 h-4 w-4 shrink-0 text-gold-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
-                                Operator BOSP di setiap satuan pendidikan
-                            </li>
-                            <li class="flex items-start gap-2.5">
-                                <svg class="mt-0.5 h-4 w-4 shrink-0 text-gold-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
-                                Atas penugasan dan sepengetahuan Kepala Sekolah
-                            </li>
+                            @foreach ($setting->syarat_list as $syarat)
+                                <li class="flex items-start gap-2.5">
+                                    <svg class="mt-0.5 h-4 w-4 shrink-0 text-gold-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                                    {{ $syarat }}
+                                </li>
+                            @endforeach
                         </ul>
                     </div>
+                    @endif
                 </div>
 
                 <div class="lg:col-span-7">

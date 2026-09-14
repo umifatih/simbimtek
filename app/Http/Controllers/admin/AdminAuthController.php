@@ -9,9 +9,11 @@ use Illuminate\Support\Facades\Auth;
 class AdminAuthController extends Controller
 {
     public function showLogin()
-    {
-        return view('admin.login');
-    }
+{
+    $setting = \App\Models\SiteSetting::current();
+
+    return view('admin.login', compact('setting'));
+}
 
     public function login(Request $request)
     {

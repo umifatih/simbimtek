@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk Admin — SIMBIMTEK</title>
+    <title>Masuk Admin — {{ $setting->nama_aplikasi }}</title>
+
+    @if ($setting->logo_url)
+        <link rel="icon" type="image/png" href="{{ $setting->logo_url }}">
+    @endif
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -16,8 +21,14 @@
 
     <div class="relative w-full max-w-sm">
         <div class="mb-8 flex flex-col items-center text-center">
-            <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-gold font-display text-base font-bold text-ink-900">SB</span>
-            <p class="mt-3 font-display text-lg font-bold text-canvas">SIMBIMTEK</p>
+            @if ($setting->logo_url)
+                <img src="{{ $setting->logo_url }}" alt="{{ $setting->nama_aplikasi }}" class="h-12 w-12 rounded-xl object-contain">
+            @else
+                <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-gold font-display text-base font-bold text-ink-900">
+                    {{ strtoupper(substr($setting->nama_aplikasi, 0, 2)) }}
+                </span>
+            @endif
+            <p class="mt-3 font-display text-lg font-bold text-canvas">{{ $setting->nama_aplikasi }}</p>
             <p class="text-xs text-canvas/50">Masuk ke Panel Admin</p>
         </div>
 

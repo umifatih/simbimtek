@@ -147,10 +147,13 @@
                                 @error('tanggal_lahir') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                             </div>
 
-                            <div>
+                            <div class="sm:col-span-2">
                                 <label for="jabatan" class="text-sm font-semibold text-ink-900">Jabatan <span class="text-gold-600">*</span></label>
                                 <select id="jabatan" name="jabatan" required class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none transition focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
                                     <option value="" {{ old('jabatan') ? '' : 'selected' }}>— Pilih jabatan —</option>
+                                    <option value="Kepala Sekolah" {{ old('jabatan') === 'Kepala Sekolah' ? 'selected' : '' }}>Kepala Sekolah</option>
+                                    <option value="Guru" {{ old('jabatan') === 'Guru' ? 'selected' : '' }}>Guru</option>
+                                    <option value="Tenaga Kependidikan" {{ old('jabatan') === 'Tenaga Kependidikan' ? 'selected' : '' }}>Tenaga Kependidikan</option>
                                     <option value="Bendahara BOSP" {{ old('jabatan') === 'Bendahara BOSP' ? 'selected' : '' }}>Bendahara BOSP</option>
                                     <option value="Operator BOSP" {{ old('jabatan') === 'Operator BOSP' ? 'selected' : '' }}>Operator BOSP</option>
                                     <option value="lainnya" {{ old('jabatan') === 'lainnya' ? 'selected' : '' }}>Lainnya</option>
@@ -166,12 +169,6 @@
                                     class="mt-2 w-full {{ old('jabatan') === 'lainnya' ? '' : 'hidden' }} rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none transition placeholder:text-ink/35 focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10"
                                 >
                                 @error('jabatan_lainnya') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
-                            </div>
-
-                            <div>
-                                <label for="email" class="text-sm font-semibold text-ink-900">Email <span class="text-gold-600">*</span></label>
-                                <input type="email" id="email" name="email" value="{{ old('email') }}" required placeholder="nama@email.com" class="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-900 outline-none transition placeholder:text-ink/35 focus:border-ink-900 focus:ring-2 focus:ring-ink-900/10">
-                                @error('email') <p class="mt-1.5 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                             </div>
                         </div>
 
@@ -329,7 +326,6 @@
             tempat_lahir: document.getElementById('tempat_lahir'),
             tanggal_lahir: document.getElementById('tanggal_lahir'),
             jabatan: document.getElementById('jabatan'),
-            email: document.getElementById('email'),
             nama_gelar_kepsek: document.getElementById('nama_gelar_kepsek'),
             nip_kepsek: document.getElementById('nip_kepsek'),
         };
@@ -353,7 +349,7 @@
                 if (fieldPeserta.unit_kerja) fieldPeserta.unit_kerja.value = fieldPeserta.unit_kerja.value.toUpperCase();
 
                 // Kalau jabatan hasil data lama bukan salah satu opsi baku, tampilkan sebagai "Lainnya"
-                const opsiBaku = ['Bendahara BOSP', 'Operator BOSP'];
+                const opsiBaku = ['Kepala Sekolah', 'Guru', 'Tenaga Kependidikan', 'Bendahara BOSP', 'Operator BOSP'];
                 if (fieldPeserta.jabatan.value && !opsiBaku.includes(fieldPeserta.jabatan.value)) {
                     jabatanLainnya.value = fieldPeserta.jabatan.value;
                     fieldPeserta.jabatan.value = 'lainnya';

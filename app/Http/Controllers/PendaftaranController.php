@@ -116,7 +116,6 @@ class PendaftaranController extends Controller
                 'tempat_lahir'      => $peserta->tempat_lahir,
                 'tanggal_lahir'     => optional($peserta->tanggal_lahir)->toDateString(),
                 'jabatan'           => $peserta->jabatan,
-                'email'             => $peserta->email,
                 'nama_gelar_kepsek' => $peserta->nama_gelar_kepsek,
                 'nip_kepsek'        => $peserta->nip_kepsek,
                 'nip'               => $peserta->nip,
@@ -134,9 +133,8 @@ class PendaftaranController extends Controller
             'pangkat_golongan'     => 'required|string|max:100',
             'tempat_lahir'         => 'required|string|max:100',
             'tanggal_lahir'        => 'required|date',
-            'jabatan'              => 'required|in:Bendahara BOSP,Operator BOSP,lainnya',
+            'jabatan'              => 'required|in:Kepala Sekolah,Guru,Tenaga Kependidikan,Bendahara BOSP,Operator BOSP,lainnya',
             'jabatan_lainnya'      => 'nullable|string|max:100|required_if:jabatan,lainnya',
-            'email'                => 'required|email|max:255',
             'nama_gelar_kepsek'    => 'required|string|max:255',
             'nip_kepsek'           => 'nullable|string|max:30',
             'setuju'               => 'required',
@@ -157,7 +155,6 @@ class PendaftaranController extends Controller
                 'tempat_lahir'         => $validated['tempat_lahir'],
                 'tanggal_lahir'        => $validated['tanggal_lahir'],
                 'jabatan'              => $validated['jabatan'],
-                'email'                => $validated['email'],
                 'nama_gelar_kepsek'    => $validated['nama_gelar_kepsek'],
                 'nip_kepsek'           => $validated['nip_kepsek'] ?? null,
             ]
@@ -172,7 +169,16 @@ class PendaftaranController extends Controller
         }
 
         $tahun = now()->format('Y');
-        $urutan = Pendaftaran::whereYear('created_at', $tahun)->count() + 1;
+
+        // Ambil nomor urut TERTINGGI yang pernah tercatat di nomor_pendaftaran
+        // tahun ini (bukan sekadar jumlah baris) — supaya data testing yang
+        // sempat dihapus tidak bikin nomor lama kepakai ulang dan bentrok
+        // dengan constraint unique.
+        $urutanTerakhir = Pendaftaran::where('nomor_pendaftaran', 'like', "BT-{$tahun}-%")
+            ->selectRaw("MAX(CAST(SUBSTRING(nomor_pendaftaran, 9) AS UNSIGNED)) as max_urutan")
+            ->value('max_urutan');
+
+        $urutan = ($urutanTerakhir ?? 0) + 1;
 
         $pendaftaran = Pendaftaran::create([
             'peserta_id' => $peserta->id,
@@ -269,7 +275,9 @@ class PendaftaranController extends Controller
         $template->setValue('jabatan', $pendaftaran->jabatan);
         $template->setValue('nama_ks', $pendaftaran->nama_gelar_kepsek);
         $template->setValue('nip_ks', $pendaftaran->nip_kepsek ?? '-');
-        $template->setValue('email', $pendaftaran->email ?? '-');
+        // Kolom email sudah dihapus dari form pendaftaran — tag ${email} di
+        // template (kalau masih ada) tetap terisi '-' supaya tidak error.
+        $template->setValue('email', '-');
         $template->setValue('pangkat_golongan', $pendaftaran->peserta->pangkat_golongan ?? '-');
         $template->setValue('tempat_lahir', $pendaftaran->peserta->tempat_lahir ?? '-');
         $template->setValue(
